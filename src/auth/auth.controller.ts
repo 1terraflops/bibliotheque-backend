@@ -1,0 +1,16 @@
+import { Body, Controller, Post } from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { GetTokenDto } from './dto/get-token';
+
+@Controller({
+  path: 'auth',
+  version: '1',
+})
+export class AuthController {
+  constructor(private readonly authService: AuthService) {}
+
+  @Post('get-token')
+  getToken(@Body() dto: GetTokenDto) {
+    return this.authService.getToken(dto);
+  }
+}
