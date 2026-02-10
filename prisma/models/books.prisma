@@ -1,0 +1,9 @@
+model Books {
+  id     Int    @id(map: "Book_pkey") @default(autoincrement())
+  title  String
+  author String
+  pages  Int
+
+  @@map("books")
+  @@schema("public")
+}
