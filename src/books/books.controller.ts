@@ -3,6 +3,7 @@ import { BooksService } from './books.service';
 import { GetBookByISBNRequestDto } from './dto/get-book-by-isbn-request.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
 import { AddBookByISBNRequestDto } from './dto/add-book-request.dto';
+import { BookResponseDto } from './dto/book-response.dto';
 
 @UseGuards(AuthGuard)
 @Controller({
@@ -14,11 +15,13 @@ export class BooksController {
 
   @Get()
   async findBook(@Query() dto: GetBookByISBNRequestDto) {
-    return this.booksService.findBook(dto);
+    const response = await this.booksService.findBook(dto);
+    return new BookResponseDto(response);
   }
 
   @Post()
   async addBookToDB(@Body() dto: AddBookByISBNRequestDto) {
-    return this.booksService.insertBookToDB(dto);
+    const response = await this.booksService.insertBookToDB(dto);
+    return new BookResponseDto(response);
   }
 }

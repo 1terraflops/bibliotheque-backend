@@ -8,8 +8,8 @@ import { GetBookByISBNRequestDto } from './dto/get-book-by-isbn-request.dto';
 import { firstValueFrom } from 'rxjs';
 import { GoogleBooksResponseDto } from './dto/google-book-item.interface';
 import { PrismaService } from 'src/database/prisma.service';
-import { GetBookResponseDto } from './dto/get-book-response.dto';
 import { AddBookByISBNRequestDto } from './dto/add-book-request.dto';
+import { NormalizedBookDto } from './dto/normalized-book-dto';
 
 @Injectable()
 export class BooksService {
@@ -35,7 +35,7 @@ export class BooksService {
       throw new NotFoundException(`Book with ISBN ${dto.isbn} not found`);
     }
 
-    return new GetBookResponseDto(response.data.items[0]);
+    return new NormalizedBookDto(response.data.items[0]);
   }
 
   async findBook(dto: GetBookByISBNRequestDto) {

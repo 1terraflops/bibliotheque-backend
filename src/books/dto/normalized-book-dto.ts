@@ -1,6 +1,6 @@
 import { GoogleBookItem } from './google-book-item.interface';
 
-export class GetBookResponseDto {
+export class NormalizedBookDto {
   isbn: string;
   title: string;
   author: string;
