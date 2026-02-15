@@ -1,7 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import {
+  ConflictException,
   Injectable,
-  NotAcceptableException,
   NotFoundException,
 } from '@nestjs/common';
 import { GetBookByISBNRequestDto } from './dto/get-book-by-isbn-request.dto';
@@ -18,41 +18,47 @@ export class BooksService {
     private readonly prisma: PrismaService,
   ) {}
 
-  async findInGoogleBooks(dto: GetBookByISBNRequestDto) {
+  private async findBookInDB(dto: GetBookByISBNRequestDto) {
+    return await this.prisma.books.findUnique({
+      where: { isbn: dto.isbn },
+    });
+  }
+
+  private async findInGoogleBooks(dto: GetBookByISBNRequestDto) {
     const response = await firstValueFrom(
       this.httpService.get<GoogleBooksResponseDto>(
         `https://www.googleapis.com/books/v1/volumes?q=isbn:${dto.isbn}`,
       ),
     );
 
-    return response.data;
-  }
-
-  async findBookInDB(dto: GetBookByISBNRequestDto) {
-    const response = await this.prisma.books.findFirst({
-      where: { isbn: dto.isbn },
-    });
-
-    return response;
-  }
-
-  async insertBookToDB(dto: AddBookByISBNRequestDto) {
-    const responseGoogleBooks = await this.findInGoogleBooks(dto);
-    const responseDB = await this.findBookInDB(dto);
-
-    if (!responseGoogleBooks || !responseGoogleBooks.items) {
+    if (!response || !response.data.items?.length) {
       throw new NotFoundException(`Book with ISBN ${dto.isbn} not found`);
     }
 
-    const book = responseGoogleBooks.items[0];
-    const formattedBookData = new GetBookResponseDto(book);
+    return new GetBookResponseDto(response.data.items[0]);
+  }
 
-    if (formattedBookData.isbn === responseDB?.isbn) {
-      throw new NotAcceptableException('Book with this ISBN already exists');
+  async findBook(dto: GetBookByISBNRequestDto) {
+    const responseDB = await this.findBookInDB(dto);
+
+    if (responseDB) {
+      return responseDB;
     }
 
+    return await this.findInGoogleBooks(dto);
+  }
+
+  async insertBookToDB(dto: AddBookByISBNRequestDto) {
+    const existingBook = await this.findBookInDB(dto);
+
+    if (existingBook) {
+      throw new ConflictException('Book with this ISBN already exists');
+    }
+
+    const bookData = await this.findInGoogleBooks(dto);
+
     return await this.prisma.books.create({
-      data: formattedBookData,
+      data: bookData,
     });
   }
 }
