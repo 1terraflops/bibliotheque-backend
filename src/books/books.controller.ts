@@ -1,8 +1,16 @@
-import { Controller, Get, NotFoundException, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  NotFoundException,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { BooksService } from './books.service';
 import { GetBookByISBNRequestDto } from './dto/get-book-by-isbn-request.dto';
 import { GetBookByISBNResponseDto } from './dto/get-book-by-isbn-response.dto';
+import { AuthGuard } from 'src/auth/auth.guard';
 
+@UseGuards(AuthGuard)
 @Controller({
   path: 'books',
   version: '1',
