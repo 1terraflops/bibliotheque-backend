@@ -6,7 +6,7 @@ export interface GoogleBooksResponseDto {
 export interface GoogleBookItem {
   volumeInfo: {
     title: string;
-    authors?: string[];
+    authors?: string;
     description?: string;
     pageCount?: number;
     imageLinks?: {
