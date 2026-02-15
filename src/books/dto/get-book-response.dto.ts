@@ -1,6 +1,6 @@
 import { GoogleBookItem } from './google-book-item.interface';
 
-export class GetBookByISBNResponseDto {
+export class GetBookResponseDto {
   isbn: string;
   title: string;
   author: string;
@@ -10,8 +10,8 @@ export class GetBookByISBNResponseDto {
 
   constructor(book: GoogleBookItem) {
     this.isbn =
-      book.volumeInfo.industryIdentifiers[0].identifier ||
       book.volumeInfo.industryIdentifiers[1].identifier ||
+      book.volumeInfo.industryIdentifiers[0].identifier ||
       '';
     this.title = book.volumeInfo.title;
     this.author = Array.isArray(book.volumeInfo.authors)

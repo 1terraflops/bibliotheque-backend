@@ -8,7 +8,7 @@ import { GetBookByISBNRequestDto } from './dto/get-book-by-isbn-request.dto';
 import { firstValueFrom } from 'rxjs';
 import { GoogleBooksResponseDto } from './dto/google-book-item.interface';
 import { PrismaService } from 'src/database/prisma.service';
-import { GetBookByISBNResponseDto } from './dto/get-book-by-isbn-response.dto';
+import { GetBookResponseDto } from './dto/get-book-response.dto';
 import { AddBookByISBNRequestDto } from './dto/add-book-request.dto';
 
 @Injectable()
@@ -18,7 +18,7 @@ export class BooksService {
     private readonly prisma: PrismaService,
   ) {}
 
-  async findByISBN(dto: GetBookByISBNRequestDto) {
+  async findInGoogleBooks(dto: GetBookByISBNRequestDto) {
     const response = await firstValueFrom(
       this.httpService.get<GoogleBooksResponseDto>(
         `https://www.googleapis.com/books/v1/volumes?q=isbn:${dto.isbn}`,
@@ -28,24 +28,31 @@ export class BooksService {
     return response.data;
   }
 
-  async insertBookToDB(dto: AddBookByISBNRequestDto) {
-    const response = await this.findByISBN(dto);
+  async findBookInDB(dto: GetBookByISBNRequestDto) {
+    const response = await this.prisma.books.findFirst({
+      where: { isbn: dto.isbn },
+    });
 
-    if (!response || !response.items) {
+    return response;
+  }
+
+  async insertBookToDB(dto: AddBookByISBNRequestDto) {
+    const responseGoogleBooks = await this.findInGoogleBooks(dto);
+    const responseDB = await this.findBookInDB(dto);
+
+    if (!responseGoogleBooks || !responseGoogleBooks.items) {
       throw new NotFoundException(`Book with ISBN ${dto.isbn} not found`);
     }
 
-    const book = response.items[0];
-    const formattedBookData = new GetBookByISBNResponseDto(book);
+    const book = responseGoogleBooks.items[0];
+    const formattedBookData = new GetBookResponseDto(book);
 
-    try {
-      const result = await this.prisma.books.create({
-        data: formattedBookData,
-      });
-
-      return result;
-    } catch {
+    if (formattedBookData.isbn === responseDB?.isbn) {
       throw new NotAcceptableException('Book with this ISBN already exists');
     }
+
+    return await this.prisma.books.create({
+      data: formattedBookData,
+    });
   }
 }

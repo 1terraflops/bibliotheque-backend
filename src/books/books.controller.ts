@@ -9,7 +9,7 @@ import {
 import { BooksService } from './books.service';
 import { GetBookByISBNRequestDto } from './dto/get-book-by-isbn-request.dto';
 import { AuthGuard } from 'src/auth/auth.guard';
-import { GetBookByISBNResponseDto } from './dto/get-book-by-isbn-response.dto';
+import { GetBookResponseDto } from './dto/get-book-response.dto';
 import { AddBookByISBNRequestDto } from './dto/add-book-request.dto';
 
 @UseGuards(AuthGuard)
@@ -21,18 +21,18 @@ export class BooksController {
   constructor(private readonly booksService: BooksService) {}
 
   @Get()
-  async getBookByISBN(@Query() dto: GetBookByISBNRequestDto) {
-    const response = await this.booksService.findByISBN(dto);
+  async findInGoogleBooks(@Query() dto: GetBookByISBNRequestDto) {
+    const response = await this.booksService.findInGoogleBooks(dto);
 
     if (!response || !response.items?.length) {
       throw new NotFoundException(`Book with ISBN ${dto.isbn} not found`);
     }
 
-    return new GetBookByISBNResponseDto(response.items[0]);
+    return new GetBookResponseDto(response.items[0]);
   }
 
   @Post()
-  async addBook(@Query() dto: AddBookByISBNRequestDto) {
+  async addBookToDB(@Query() dto: AddBookByISBNRequestDto) {
     return this.booksService.insertBookToDB(dto);
   }
 }
