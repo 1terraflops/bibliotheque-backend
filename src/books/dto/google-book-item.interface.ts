@@ -12,5 +12,15 @@ export interface GoogleBookItem {
     imageLinks?: {
       thumbnail?: string;
     };
+    industryIdentifiers: [
+      {
+        type: string;
+        identifier: string;
+      },
+      {
+        type: string;
+        identifier: string;
+      },
+    ];
   };
 }
