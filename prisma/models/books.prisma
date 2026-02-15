@@ -1,6 +1,6 @@
 model Books {
   id          Int    @id(map: "Book_pkey") @default(autoincrement())
-  isbn        String
+  isbn        String @unique
   title       String
   author      String
   description String

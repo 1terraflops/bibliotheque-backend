@@ -6,7 +6,7 @@ export class GetBookByISBNResponseDto {
   author: string;
   description: string;
   pageCount: number;
-  coverUrl?: string;
+  coverUrl: string;
 
   constructor(book: GoogleBookItem) {
     this.isbn =
@@ -14,7 +14,9 @@ export class GetBookByISBNResponseDto {
       book.volumeInfo.industryIdentifiers[1].identifier ||
       '';
     this.title = book.volumeInfo.title;
-    this.author = book.volumeInfo.authors || '';
+    this.author = Array.isArray(book.volumeInfo.authors)
+      ? book.volumeInfo.authors.join(', ')
+      : book.volumeInfo.authors || '';
     this.description = book.volumeInfo.description || '';
     this.pageCount = book.volumeInfo.pageCount || 0;
     this.coverUrl = book.volumeInfo.imageLinks?.thumbnail || '';
