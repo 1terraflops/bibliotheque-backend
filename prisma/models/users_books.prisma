@@ -1,0 +1,13 @@
+model UsersBooks {
+  profileId String @map("profileId") @db.Uuid
+  bookId    Int
+  status    String
+  pagesRead Int
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  book    Books   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@id([profileId, bookId])
+  @@map("users_books")
+  @@schema("public")
+}

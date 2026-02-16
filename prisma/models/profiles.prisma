@@ -5,6 +5,7 @@ model Profile {
   full_name  String?   @map("full_name")
   avatar_url String?   @map("avatar_url")
   bio        String?
+  users_books UsersBooks[]
 
   @@index([username])
   @@map("profiles")

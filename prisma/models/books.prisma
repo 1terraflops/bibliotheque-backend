@@ -6,6 +6,7 @@ model Books {
   description String
   pageCount   Int
   coverUrl    String
+  users_books UsersBooks[]
 
   @@map("books")
   @@schema("public")
