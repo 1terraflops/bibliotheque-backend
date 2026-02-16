@@ -1,8 +1,22 @@
+enum BookStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  DROPPED
+
+  @@schema("public")
+}
+
 model UsersBooks {
-  profileId String @map("profileId") @db.Uuid
-  bookId    Int
-  status    String
-  pagesRead Int
+  profileId  String @map("profileId") @db.Uuid
+  bookId     Int
+  status     BookStatus @default(NOT_STARTED)
+  pagesRead  Int    @default(0)
+  startedAt  DateTime?  @map("started_at")
+  finishedAt DateTime?  @map("finished_at")
+  updatedAt  DateTime?   @updatedAt @map("updated_at")
+  rating     Int?  @db.SmallInt
+  isFavorite Boolean    @default(false) @map("is_favorite")
 
   profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
   book    Books   @relation(fields: [bookId], references: [id], onDelete: Cascade)
