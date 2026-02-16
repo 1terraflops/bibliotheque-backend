@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { BooksService } from './books.service';
 import { GetBookByISBNRequestDto } from './dto/get-book-by-isbn-request.dto';
-import { AuthGuard } from 'src/auth/auth.guard';
+import { AuthGuard } from 'src/guards/auth.guard';
 import { AddBookByISBNRequestDto } from './dto/add-book-request.dto';
 import { BookResponseDto } from './dto/book-response.dto';
 

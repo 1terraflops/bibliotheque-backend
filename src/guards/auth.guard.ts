@@ -15,7 +15,7 @@ interface AuthenticatedRequest extends Request {
 @Injectable()
 export class AuthGuard implements CanActivate {
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const request = context.switchToHttp().getRequest<Request>();
+    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
     const authHeader = request.headers['authorization'];
 
     if (!authHeader) {
@@ -34,7 +34,7 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException('Invalid or expired token');
     }
 
-    (request as AuthenticatedRequest).user = data.user;
+    request.user = data.user;
     return true;
   }
 }
