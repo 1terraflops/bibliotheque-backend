@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Query,
   SerializeOptions,
@@ -17,6 +18,8 @@ import { BookResponseDto } from './dto/book-response.dto';
 import { CurrentUser } from 'src/decorators/current-user.decorator';
 import { UserBookResponseDto } from './dto/user-book-response.dto';
 import { DeleteBookRequestDto } from './dto/delete-book-request.dto';
+import { UpdateBookRequestDto } from './dto/update-book-request.dto';
+import { isbnDto } from './dto/isbn.dto';
 
 @Controller({
   path: 'books',
@@ -53,6 +56,16 @@ export class BooksController {
     @CurrentUser('id') userId: string,
   ) {
     return await this.booksService.addBookToProfile(dto, userId);
+  }
+
+  @Patch(':isbn')
+  @SerializeOptions({ type: UserBookResponseDto })
+  async updateUsersBook(
+    @Body() dto: UpdateBookRequestDto,
+    @Param() isbnDto: isbnDto,
+    @CurrentUser('id') id: string,
+  ) {
+    return await this.booksService.updateUsersBook(dto, isbnDto, id);
   }
 
   @Delete(':isbn')

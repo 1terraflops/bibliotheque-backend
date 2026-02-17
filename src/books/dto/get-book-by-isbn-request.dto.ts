@@ -1,9 +1,6 @@
-import { IsString, Matches } from 'class-validator';
+import { IsISBN } from 'class-validator';
 
 export class GetBookByISBNRequestDto {
-  @IsString()
-  @Matches(/^(?:\d{10}|\d{13})$/, {
-    message: 'ISBN must be either 10 or 13 digits',
-  })
+  @IsISBN()
   isbn: string;
 }

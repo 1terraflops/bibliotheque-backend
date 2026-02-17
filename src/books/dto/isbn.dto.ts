@@ -1,6 +1,6 @@
 import { IsISBN } from 'class-validator';
 
-export class DeleteBookRequestDto {
+export class isbnDto {
   @IsISBN()
   isbn: string;
 }
