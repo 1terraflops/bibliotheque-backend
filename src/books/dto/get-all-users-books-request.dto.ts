@@ -20,7 +20,7 @@ export class GetAllUsersBooksRequestDto {
 
   @IsOptional()
   @IsNumber()
-  @Min(1)
+  @Min(0)
   @Type(() => Number)
   offset?: number = 0;
 }
