@@ -22,13 +22,13 @@ export class BooksService {
     private readonly prisma: PrismaService,
   ) {}
 
-  private async findBookInDB(dto: GetBookByISBNRequestDto) {
+  private async findBookInDB(dto: isbnDto) {
     return await this.prisma.books.findUnique({
       where: { isbn: dto.isbn },
     });
   }
 
-  private async findInGoogleBooks(dto: GetBookByISBNRequestDto) {
+  private async findInGoogleBooks(dto: isbnDto) {
     const response = await firstValueFrom(
       this.httpService.get<GoogleBooksResponseDto>(
         `https://www.googleapis.com/books/v1/volumes?q=isbn:${dto.isbn}`,
@@ -42,7 +42,7 @@ export class BooksService {
     return new NormalizedBookDto(response.data.items[0]);
   }
 
-  private async saveAndGetBook(dto: AddBookByISBNRequestDto) {
+  private async saveAndGetBook(dto: isbnDto) {
     const existingBook = await this.findBookInDB(dto);
 
     if (existingBook) {
@@ -73,11 +73,11 @@ export class BooksService {
     });
   }
 
-  async findUsersBook(dto: GetBookByISBNRequestDto, profileId: string) {
+  async findUsersBook(dto: isbnDto, profileId: string) {
     const book = await this.findBookInDB(dto);
 
     if (!book) {
-      throw new NotFoundException('This user does not have this book');
+      throw new NotFoundException('Unknown ISBN');
     }
 
     return this.prisma.usersBooks.findUnique({
