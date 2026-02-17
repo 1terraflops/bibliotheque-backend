@@ -1,6 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import {
   ConflictException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -14,18 +15,33 @@ import { DeleteBookRequestDto } from './dto/delete-book-request.dto';
 import { UpdateBookRequestDto } from './dto/update-book-request.dto';
 import { isbnDto } from './dto/isbn.dto';
 import { GetAllUsersBooksRequestDto } from './dto/get-all-users-books-request.dto';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { type Cache } from 'cache-manager';
+import { Books } from 'generated/prisma/client';
+
+const TTL = 1000 * 60 * 2;
 
 @Injectable()
 export class BooksService {
   constructor(
     private readonly httpService: HttpService,
     private readonly prisma: PrismaService,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {}
 
   private async findBookInDB(dto: isbnDto) {
-    return await this.prisma.books.findUnique({
+    const cached = await this.cacheManager.get<Books>(dto.isbn);
+    if (cached) return cached;
+
+    const book = await this.prisma.books.findUnique({
       where: { isbn: dto.isbn },
     });
+
+    if (book) {
+      await this.cacheManager.set(dto.isbn, book, TTL);
+    }
+
+    return book;
   }
 
   private async findInGoogleBooks(dto: isbnDto) {
@@ -51,9 +67,13 @@ export class BooksService {
 
     const bookData = await this.findInGoogleBooks(dto);
 
-    return await this.prisma.books.create({
+    const book = await this.prisma.books.create({
       data: bookData,
     });
+
+    await this.cacheManager.set(dto.isbn, book, TTL);
+
+    return book;
   }
 
   async findBook(dto: GetBookByISBNRequestDto) {

@@ -6,13 +6,15 @@ import { AuthModule } from './auth/auth.module';
 import { BooksModule } from './books/books.module';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './guards/auth.guard';
+import { CacheModule } from '@nestjs/cache-manager';
 
 @Module({
   imports: [
-    PrismaServiceModule,
-    ConfigModule.forRoot({ isGlobal: true }),
     AuthModule,
     BooksModule,
+    PrismaServiceModule,
+    ConfigModule.forRoot({ isGlobal: true }),
+    CacheModule.register({ isGlobal: true }),
   ],
   providers: [
     AuthService,
