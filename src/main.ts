@@ -37,7 +37,6 @@ async function bootstrap() {
         includeSubDomains: true,
         preload: true,
       },
-      referrerPolicy: { policy: 'no-referrer' },
     }),
   );
 
