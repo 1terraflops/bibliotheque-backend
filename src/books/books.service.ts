@@ -67,9 +67,14 @@ export class BooksService {
   }
 
   async findAllUsersBooks(dto: GetAllUsersBooksRequestDto, profileId: string) {
+    const { status, sort, take = 10, offset = 0 } = dto;
+
     return this.prisma.usersBooks.findMany({
-      where: { profileId, status: dto.status },
+      where: { profileId, status: status },
       include: { book: true },
+      orderBy: { updatedAt: sort },
+      take,
+      skip: offset,
     });
   }
 
