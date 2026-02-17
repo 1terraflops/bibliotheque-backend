@@ -13,6 +13,7 @@ import { NormalizedBookDto } from './dto/normalized-book-dto';
 import { DeleteBookRequestDto } from './dto/delete-book-request.dto';
 import { UpdateBookRequestDto } from './dto/update-book-request.dto';
 import { isbnDto } from './dto/isbn.dto';
+import { GetAllUsersBooksRequestDto } from './dto/get-all-users-books-request.dto';
 
 @Injectable()
 export class BooksService {
@@ -65,9 +66,9 @@ export class BooksService {
     });
   }
 
-  async findAllUsersBooks(profileId: string) {
+  async findAllUsersBooks(dto: GetAllUsersBooksRequestDto, profileId: string) {
     return this.prisma.usersBooks.findMany({
-      where: { profileId },
+      where: { profileId, status: dto.status },
       include: { book: true },
     });
   }

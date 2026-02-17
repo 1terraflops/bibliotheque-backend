@@ -20,6 +20,7 @@ import { UserBookResponseDto } from './dto/user-book-response.dto';
 import { DeleteBookRequestDto } from './dto/delete-book-request.dto';
 import { UpdateBookRequestDto } from './dto/update-book-request.dto';
 import { isbnDto } from './dto/isbn.dto';
+import { GetAllUsersBooksRequestDto } from './dto/get-all-users-books-request.dto';
 
 @Controller({
   path: 'books',
@@ -36,8 +37,11 @@ export class BooksController {
 
   @Get('all-users-books')
   @SerializeOptions({ type: UserBookResponseDto })
-  async getAllBooks(@CurrentUser('id') id: string) {
-    return await this.booksService.findAllUsersBooks(id);
+  async getAllBooks(
+    @Query() dto: GetAllUsersBooksRequestDto,
+    @CurrentUser('id') id: string,
+  ) {
+    return await this.booksService.findAllUsersBooks(dto, id);
   }
 
   @Get('users-book')
