@@ -44,10 +44,10 @@ export class BooksController {
     return await this.booksService.findAllUsersBooks(dto, id);
   }
 
-  @Get('users-book')
+  @Get('users-book/:isbn')
   @SerializeOptions({ type: UserBookResponseDto })
   async getUsersBook(
-    @Query() dto: GetBookByISBNRequestDto,
+    @Param() dto: GetBookByISBNRequestDto,
     @CurrentUser('id') id: string,
   ) {
     return await this.booksService.findUsersBook(dto, id);

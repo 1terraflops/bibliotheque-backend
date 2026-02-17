@@ -42,17 +42,7 @@ export class BooksService {
     return new NormalizedBookDto(response.data.items[0]);
   }
 
-  async findBook(dto: GetBookByISBNRequestDto) {
-    const responseDB = await this.findBookInDB(dto);
-
-    if (responseDB) {
-      return responseDB;
-    }
-
-    return await this.findInGoogleBooks(dto);
-  }
-
-  async saveAndGetBook(dto: AddBookByISBNRequestDto) {
+  private async saveAndGetBook(dto: AddBookByISBNRequestDto) {
     const existingBook = await this.findBookInDB(dto);
 
     if (existingBook) {
@@ -64,6 +54,16 @@ export class BooksService {
     return await this.prisma.books.create({
       data: bookData,
     });
+  }
+
+  async findBook(dto: GetBookByISBNRequestDto) {
+    const responseDB = await this.findBookInDB(dto);
+
+    if (responseDB) {
+      return responseDB;
+    }
+
+    return await this.findInGoogleBooks(dto);
   }
 
   async findAllUsersBooks(dto: GetAllUsersBooksRequestDto, profileId: string) {
