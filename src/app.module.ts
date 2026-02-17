@@ -7,6 +7,7 @@ import { BooksModule } from './books/books.module';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './guards/auth.guard';
 import { CacheModule } from '@nestjs/cache-manager';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
@@ -15,12 +16,29 @@ import { CacheModule } from '@nestjs/cache-manager';
     PrismaServiceModule,
     ConfigModule.forRoot({ isGlobal: true }),
     CacheModule.register({ isGlobal: true }),
+    ThrottlerModule.forRoot([
+      {
+        name: 'short',
+        ttl: 1000,
+        limit: 3,
+      },
+      {
+        name: 'medium',
+        ttl: 10000,
+        limit: 10,
+      },
+    ]),
   ],
   providers: [
     AuthService,
     {
       provide: APP_GUARD,
       useClass: AuthGuard,
+    },
+
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
     },
   ],
 })

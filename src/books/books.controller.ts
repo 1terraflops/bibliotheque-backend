@@ -21,6 +21,7 @@ import { DeleteBookRequestDto } from './dto/delete-book-request.dto';
 import { UpdateBookRequestDto } from './dto/update-book-request.dto';
 import { isbnDto } from './dto/isbn.dto';
 import { GetAllUsersBooksRequestDto } from './dto/get-all-users-books-request.dto';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller({
   path: 'books',
@@ -31,6 +32,7 @@ export class BooksController {
 
   @Get()
   @SerializeOptions({ type: BookResponseDto })
+  @Throttle({ default: { ttl: 2000, limit: 1 } })
   async findBook(@Query() dto: GetBookByISBNRequestDto) {
     return await this.booksService.findBook(dto);
   }
