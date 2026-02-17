@@ -1,7 +1,11 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
+  HttpStatus,
+  Param,
   Post,
   Query,
   SerializeOptions,
@@ -12,6 +16,7 @@ import { AddBookByISBNRequestDto } from './dto/add-book-request.dto';
 import { BookResponseDto } from './dto/book-response.dto';
 import { CurrentUser } from 'src/decorators/current-user.decorator';
 import { UserBookResponseDto } from './dto/user-book-response.dto';
+import { DeleteBookRequestDto } from './dto/delete-book-request.dto';
 
 @Controller({
   path: 'books',
@@ -48,5 +53,14 @@ export class BooksController {
     @CurrentUser('id') userId: string,
   ) {
     return await this.booksService.addBookToProfile(dto, userId);
+  }
+
+  @Delete(':isbn')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteBookFromProfile(
+    @Param() dto: DeleteBookRequestDto,
+    @CurrentUser('id') id: string,
+  ) {
+    return await this.booksService.deleteBookFromProfile(dto, id);
   }
 }

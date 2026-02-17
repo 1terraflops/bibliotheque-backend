@@ -10,6 +10,7 @@ import { GoogleBooksResponseDto } from './dto/google-book-item.interface';
 import { PrismaService } from 'src/database/prisma.service';
 import { AddBookByISBNRequestDto } from './dto/add-book-request.dto';
 import { NormalizedBookDto } from './dto/normalized-book-dto';
+import { DeleteBookRequestDto } from './dto/delete-book-request.dto';
 
 @Injectable()
 export class BooksService {
@@ -109,6 +110,23 @@ export class BooksService {
         bookId: book.id,
       },
       include: { book: true },
+    });
+  }
+
+  async deleteBookFromProfile(dto: DeleteBookRequestDto, profileId: string) {
+    const book = await this.findUsersBook(dto, profileId);
+
+    if (!book) {
+      throw new NotFoundException('This user does not have this book');
+    }
+
+    await this.prisma.usersBooks.delete({
+      where: {
+        profileId_bookId: {
+          profileId,
+          bookId: book.bookId,
+        },
+      },
     });
   }
 }
