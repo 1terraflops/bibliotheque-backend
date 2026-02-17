@@ -62,6 +62,31 @@ export class BooksService {
     });
   }
 
+  async findAllUsersBooks(profileId: string) {
+    return this.prisma.usersBooks.findMany({
+      where: { profileId },
+      include: { book: true },
+    });
+  }
+
+  async findUsersBook(dto: GetBookByISBNRequestDto, profileId: string) {
+    const book = await this.findBookInDB(dto);
+
+    if (!book) {
+      throw new NotFoundException('This user does not have this book');
+    }
+
+    return this.prisma.usersBooks.findUnique({
+      where: {
+        profileId_bookId: {
+          profileId,
+          bookId: book.id,
+        },
+      },
+      include: { book: true },
+    });
+  }
+
   async addBookToProfile(dto: AddBookByISBNRequestDto, profileId: string) {
     const book = await this.saveAndGetBook(dto);
 

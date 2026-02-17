@@ -26,6 +26,21 @@ export class BooksController {
     return await this.booksService.findBook(dto);
   }
 
+  @Get('all-users-books')
+  @SerializeOptions({ type: UserBookResponseDto })
+  async getAllBooks(@CurrentUser('id') id: string) {
+    return await this.booksService.findAllUsersBooks(id);
+  }
+
+  @Get('users-book')
+  @SerializeOptions({ type: UserBookResponseDto })
+  async getUsersBook(
+    @Query() dto: GetBookByISBNRequestDto,
+    @CurrentUser('id') id: string,
+  ) {
+    return await this.booksService.findUsersBook(dto, id);
+  }
+
   @Post()
   @SerializeOptions({ type: UserBookResponseDto })
   async addBook(
