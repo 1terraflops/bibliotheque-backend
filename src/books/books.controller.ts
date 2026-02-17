@@ -1,8 +1,17 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Query,
+  SerializeOptions,
+} from '@nestjs/common';
 import { BooksService } from './books.service';
 import { GetBookByISBNRequestDto } from './dto/get-book-by-isbn-request.dto';
 import { AddBookByISBNRequestDto } from './dto/add-book-request.dto';
 import { BookResponseDto } from './dto/book-response.dto';
+import { CurrentUser } from 'src/decorators/current-user.decorator';
+import { UserBookResponseDto } from './dto/user-book-response.dto';
 
 @Controller({
   path: 'books',
@@ -12,14 +21,17 @@ export class BooksController {
   constructor(private readonly booksService: BooksService) {}
 
   @Get()
+  @SerializeOptions({ type: BookResponseDto })
   async findBook(@Query() dto: GetBookByISBNRequestDto) {
-    const response = await this.booksService.findBook(dto);
-    return new BookResponseDto(response);
+    return await this.booksService.findBook(dto);
   }
 
   @Post()
-  async addBookToDB(@Body() dto: AddBookByISBNRequestDto) {
-    const response = await this.booksService.insertBookToDB(dto);
-    return new BookResponseDto(response);
+  @SerializeOptions({ type: UserBookResponseDto })
+  async addBook(
+    @Body() dto: AddBookByISBNRequestDto,
+    @CurrentUser('id') userId: string,
+  ) {
+    return await this.booksService.addBookToProfile(dto, userId);
   }
 }

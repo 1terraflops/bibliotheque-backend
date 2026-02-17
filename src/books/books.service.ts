@@ -48,17 +48,42 @@ export class BooksService {
     return await this.findInGoogleBooks(dto);
   }
 
-  async insertBookToDB(dto: AddBookByISBNRequestDto) {
+  async saveAndGetBook(dto: AddBookByISBNRequestDto) {
     const existingBook = await this.findBookInDB(dto);
 
     if (existingBook) {
-      throw new ConflictException('Book with this ISBN already exists');
+      return existingBook;
     }
 
     const bookData = await this.findInGoogleBooks(dto);
 
     return await this.prisma.books.create({
       data: bookData,
+    });
+  }
+
+  async addBookToProfile(dto: AddBookByISBNRequestDto, profileId: string) {
+    const book = await this.saveAndGetBook(dto);
+
+    const existingBook = await this.prisma.usersBooks.findUnique({
+      where: {
+        profileId_bookId: {
+          profileId,
+          bookId: book.id,
+        },
+      },
+    });
+
+    if (existingBook) {
+      throw new ConflictException('This book is already in your library');
+    }
+
+    return await this.prisma.usersBooks.create({
+      data: {
+        profileId,
+        bookId: book.id,
+      },
+      include: { book: true },
     });
   }
 }
