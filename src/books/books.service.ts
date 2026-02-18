@@ -19,7 +19,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { type Cache } from 'cache-manager';
 import { Books } from 'generated/prisma/client';
 
-const TTL = 1000 * 60 * 2;
+const TTL = 1000 * 60;
 
 @Injectable()
 export class BooksService {

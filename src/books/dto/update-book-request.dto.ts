@@ -1,7 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import {
   IsBoolean,
-  IsDateString,
   IsEnum,
   IsNumber,
   IsOptional,
@@ -20,15 +19,6 @@ export class UpdateBookRequestDto {
   @IsOptional()
   @IsEnum(BookStatus)
   status?: BookStatus;
-
-  @ApiProperty({
-    description: 'Date when user started reading this book',
-    example: '2026-02-18T00:00:00.000Z',
-    required: false,
-  })
-  @IsOptional()
-  @IsDateString()
-  startedAt?: string;
 
   @ApiProperty({
     description: 'Total number of read pages',
