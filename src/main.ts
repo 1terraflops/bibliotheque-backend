@@ -6,6 +6,8 @@ import {
   VersioningType,
 } from '@nestjs/common';
 import helmet from 'helmet';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { apiReference } from '@scalar/nestjs-api-reference';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -32,11 +34,29 @@ async function bootstrap() {
 
   app.use(
     helmet({
+      contentSecurityPolicy: false,
       hsts: {
         maxAge: 31536000,
         includeSubDomains: true,
         preload: true,
       },
+    }),
+  );
+
+  const swaggerConfig = new DocumentBuilder()
+    .setTitle('Books++')
+    .setDescription('Books++ API documentation')
+    .setVersion('1')
+    .addTag('books')
+    .build();
+
+  const document = () => SwaggerModule.createDocument(app, swaggerConfig);
+
+  app.use(
+    '/docs',
+    apiReference({
+      content: document,
+      theme: 'deepSpace',
     }),
   );
 
