@@ -8,6 +8,7 @@ import {
 import helmet from 'helmet';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
+import { OperationObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -50,7 +51,25 @@ async function bootstrap() {
     .addTag('books')
     .build();
 
-  const document = () => SwaggerModule.createDocument(app, swaggerConfig);
+  const document = () => {
+    const doc = SwaggerModule.createDocument(app, swaggerConfig, {
+      operationIdFactory: (_, methodKey: string) => methodKey,
+    });
+
+    for (const path of Object.values(doc.paths ?? {})) {
+      for (const operation of Object.values(path ?? {})) {
+        const op = operation as OperationObject;
+        if (op?.operationId && !op.summary) {
+          op.summary = op.operationId
+            .replace(/([A-Z])/g, ' $1')
+            .trim()
+            .replace(/^\w/, (c: string) => c.toUpperCase());
+        }
+      }
+    }
+
+    return doc;
+  };
 
   app.use(
     '/docs',
