@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { IsEnum, IsNumber, IsOptional, Min } from 'class-validator';
+import { IsBoolean, IsEnum, IsNumber, IsOptional, Min } from 'class-validator';
 import { BookStatus } from 'generated/prisma/enums';
 import { SortOrder } from 'generated/prisma/internal/prismaNamespace';
 
@@ -48,4 +48,15 @@ export class GetAllUsersBooksRequestDto {
   @Min(0)
   @Type(() => Number)
   offset?: number = 0;
+
+  @ApiProperty({
+    description: "Used to fetch user's favorite books",
+    example: true,
+    default: false,
+    required: false,
+  })
+  @IsOptional()
+  @IsBoolean()
+  @Type(() => Boolean)
+  isFavorite?: boolean = false;
 }

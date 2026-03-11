@@ -29,6 +29,7 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { StandardResponses } from 'src/decorators/standard-responses.decorator';
+import { DashboardResponseDto } from './dto/dashboard-response.dto';
 
 @ApiTags('books')
 @StandardResponses()
@@ -74,6 +75,16 @@ export class BooksController {
   })
   async getUsersBook(@Param() dto: isbnDto, @CurrentUser('id') id: string) {
     return await this.booksService.findUsersBook(dto, id);
+  }
+
+  @Get('dashboard')
+  @SerializeOptions({ type: DashboardResponseDto })
+  @ApiOkResponse({
+    description: 'Get books with statuses for dashboard',
+    type: [DashboardResponseDto],
+  })
+  async getDashboard(@CurrentUser('id') id: string) {
+    return this.booksService.getDashboard(id);
   }
 
   @Post()

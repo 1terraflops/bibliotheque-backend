@@ -17,7 +17,7 @@ import { isbnDto } from './dto/isbn.dto';
 import { GetAllUsersBooksRequestDto } from './dto/get-all-users-books-request.dto';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { type Cache } from 'cache-manager';
-import { Books } from 'generated/prisma/client';
+import { Books, BookStatus } from 'generated/prisma/client';
 
 const TTL = 1000 * 60;
 
@@ -87,10 +87,10 @@ export class BooksService {
   }
 
   async findAllUsersBooks(dto: GetAllUsersBooksRequestDto, profileId: string) {
-    const { status, sort, take = 10, offset = 0 } = dto;
+    const { status, sort, take = 10, offset = 0, isFavorite = false } = dto;
 
     return this.prisma.usersBooks.findMany({
-      where: { profileId, status: status },
+      where: { profileId, status: status, isFavorite },
       include: { book: true },
       orderBy: { updatedAt: sort },
       take,
@@ -114,6 +114,40 @@ export class BooksService {
       },
       include: { book: true },
     });
+  }
+
+  async getDashboard(id: string) {
+    const statuses = Object.values(BookStatus);
+
+    const statusQueries = statuses.map((status) =>
+      this.prisma.usersBooks.findMany({
+        where: { profileId: id, status: status },
+        orderBy: { updatedAt: 'desc' },
+        include: { book: true },
+        take: 7,
+      }),
+    );
+
+    const favoritesQuery = this.prisma.usersBooks.findMany({
+      where: { profileId: id, isFavorite: true },
+      orderBy: { updatedAt: 'desc' },
+      include: { book: true },
+      take: 7,
+    });
+
+    const results = await Promise.all([...statusQueries, favoritesQuery]);
+
+    const statusResults = statuses.map((status, i) => ({
+      status,
+      books: results[i],
+    }));
+
+    const favorites = {
+      status: 'FAVORITES',
+      books: results[results.length - 1],
+    };
+
+    return [...statusResults, favorites];
   }
 
   async addBookToProfile(dto: AddBookByISBNRequestDto, profileId: string) {
