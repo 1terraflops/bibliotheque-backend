@@ -58,5 +58,5 @@ export class GetAllUsersBooksRequestDto {
   @IsOptional()
   @IsBoolean()
   @Type(() => Boolean)
-  isFavorite?: boolean = false;
+  isFavorite?: boolean;
 }
