@@ -121,7 +121,12 @@ export class BooksService {
   }
 
   async getDashboard(id: string) {
-    const statuses = Object.values(BookStatus);
+    const statuses = [
+      BookStatus.IN_PROGRESS,
+      BookStatus.NOT_STARTED,
+      BookStatus.COMPLETED,
+      BookStatus.DROPPED,
+    ];
 
     const statusQueries = statuses.map((status) =>
       this.prisma.usersBooks.findMany({
