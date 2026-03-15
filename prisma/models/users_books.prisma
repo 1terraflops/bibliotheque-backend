@@ -17,6 +17,8 @@ model UsersBooks {
   updatedAt  DateTime?   @updatedAt @map("updated_at")
   rating     Int?  @db.SmallInt
   isFavorite Boolean    @default(false) @map("is_favorite")
+  spentTime  Int? @default(0) @map("spent_time")
+  estimatedTime  Int? @map("estimated")
 
   profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
   book    Books   @relation(fields: [bookId], references: [id], onDelete: Cascade)

@@ -61,6 +61,20 @@ export class UserBookResponseDto {
   isFavorite: boolean;
 
   @Expose()
+  @ApiProperty({
+    description: 'Spent time reading in minutes',
+    example: 45,
+  })
+  spentTime: number;
+
+  @Expose()
+  @ApiProperty({
+    description: 'Estimated time reading in minutes',
+    example: 320,
+  })
+  estimatedTime: number | null;
+
+  @Expose()
   @ApiProperty()
   @Type(() => BookResponseDto)
   book: BookResponseDto;
