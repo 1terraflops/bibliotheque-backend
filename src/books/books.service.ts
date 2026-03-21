@@ -13,7 +13,7 @@ import { AddBookByISBNRequestDto } from './dto/add-book-request.dto';
 import { NormalizedBookDto } from './dto/normalized-book-dto';
 import { DeleteBookRequestDto } from './dto/delete-book-request.dto';
 import { UpdateBookRequestDto } from './dto/update-book-request.dto';
-import { isbnDto } from './dto/isbn.dto';
+import { isbnDto } from '../types/isbn.dto';
 import { GetAllUsersBooksRequestDto } from './dto/get-all-users-books-request.dto';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { type Cache } from 'cache-manager';
