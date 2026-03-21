@@ -19,6 +19,7 @@ model UsersBooks {
   isFavorite Boolean    @default(false) @map("is_favorite")
   spentTime  Int? @default(0) @map("spent_time")
   estimatedTime  Int? @map("estimated")
+  sessions   Sessions[]
 
   profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
   book    Books   @relation(fields: [bookId], references: [id], onDelete: Cascade)

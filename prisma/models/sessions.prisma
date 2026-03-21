@@ -1,0 +1,31 @@
+enum SessionStatus {
+    STARTED
+    ENDED
+    CANCELLED
+
+    @@map("session_status")
+    @@schema("public")
+}
+
+model Sessions {
+    id          Int @id @default(autoincrement())
+    profileId   String @map("profile_id") @db.Uuid
+    bookId      Int    @map("book_id")
+
+    status      SessionStatus @default(STARTED)
+
+    startedAt   DateTime @map("started_at") @default(now())
+    finishedAt  DateTime? @map("finished_at")
+
+    startPage   Int @map("start_page")
+    endPage     Int? @map("end_page")
+
+    pagesRead   Int? @map("pages_read")
+    duration    Int?
+    readingSpeed Int? @map("reading_speed")
+
+    usersBook   UsersBooks @relation(fields: [profileId, bookId], references: [profileId, bookId], onDelete: Cascade)
+
+    @@map("sessions")
+    @@schema("public")
+}
