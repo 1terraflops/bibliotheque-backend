@@ -8,6 +8,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './guards/auth.guard';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { SessionsModule } from './sessions/sessions.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
         limit: 10,
       },
     ]),
+    SessionsModule,
   ],
   providers: [
     AuthService,
