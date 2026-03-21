@@ -4,6 +4,12 @@ import { Expose } from 'class-transformer';
 export class BookResponseDto {
   @Expose()
   @ApiProperty({
+    example: 1,
+  })
+  id: number;
+
+  @Expose()
+  @ApiProperty({
     example: '9786175480083',
   })
   isbn: string;
