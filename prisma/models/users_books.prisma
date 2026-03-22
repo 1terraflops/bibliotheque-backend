@@ -8,21 +8,23 @@ enum BookStatus {
 }
 
 model UsersBooks {
-  profileId  String @map("profileId") @db.Uuid
-  bookId     Int
-  status     BookStatus @default(NOT_STARTED)
-  pagesRead  Int    @default(0)
-  startedAt  DateTime?  @map("started_at")
-  finishedAt DateTime?  @map("finished_at")
-  updatedAt  DateTime?   @updatedAt @map("updated_at")
-  rating     Int?  @db.SmallInt
-  isFavorite Boolean    @default(false) @map("is_favorite")
-  spentTime  Int? @default(0) @map("spent_time")
-  estimatedTime  Int? @map("estimated")
-  sessions   Sessions[]
+  profileId       String     @map("profileId") @db.Uuid
+  bookId          Int
+  status          BookStatus @default(NOT_STARTED)
+  actualPageCount Int        @default(0) @map("actual_page_count")
+  pagesRead       Int        @default(0)
+  startedAt       DateTime?  @map("started_at")
+  finishedAt      DateTime?  @map("finished_at")
+  updatedAt       DateTime?  @updatedAt @map("updated_at")
+  rating          Int?       @db.SmallInt
+  isFavorite      Boolean    @default(false) @map("is_favorite")
+  spentTime       Int?       @default(0) @map("spent_time")
+  readingSpeed    Int        @default(0) @map("reading_speed")
+  estimatedTime   Int?       @map("estimated")
+  sessions        Sessions[]
 
-  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  book    Books   @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  profile         Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  book            Books     @relation(fields: [bookId], references: [id], onDelete: Cascade)
 
   @@id([profileId, bookId])
   @@map("users_books")
