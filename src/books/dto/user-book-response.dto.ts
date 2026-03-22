@@ -21,6 +21,12 @@ export class UserBookResponseDto {
   @ApiProperty({
     example: 15,
   })
+  actualPageCount: number;
+
+  @Expose()
+  @ApiProperty({
+    example: 15,
+  })
   pagesRead: number;
 
   @Expose()
@@ -66,6 +72,12 @@ export class UserBookResponseDto {
     example: 45,
   })
   spentTime: number;
+
+  @Expose()
+  @ApiProperty({
+    example: 15,
+  })
+  readingSpeed: number;
 
   @Expose()
   @ApiProperty({

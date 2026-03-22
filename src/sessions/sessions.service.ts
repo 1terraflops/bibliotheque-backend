@@ -94,16 +94,15 @@ export class SessionsService {
 
     const book = await this.prisma.usersBooks.findUnique({
       where: { profileId_bookId: { profileId, bookId: session.bookId } },
-      include: { book: true },
     });
     if (!book) {
       throw new NotFoundException('Book not found in user library');
     }
 
-    const { pageCount = 0 } = book.book;
+    const { actualPageCount = 0 }: { actualPageCount: number } = book;
 
     // Session values
-    const endPage = Math.min(dto.endPage, pageCount);
+    const endPage = Math.min(dto.endPage, actualPageCount);
     const pagesRead = Math.max(0, endPage - dto.startPage);
     const duration = moment(dto.finishedAt).diff(dto.startedAt, 'minutes');
     const readingSpeed =
@@ -112,18 +111,22 @@ export class SessionsService {
     // Overall book values
     const totalPagesRead = Math.min(
       (book.pagesRead ?? 0) + pagesRead,
-      pageCount,
+      actualPageCount,
     );
     const totalSpentTime = (book.spentTime ?? 0) + duration;
     const status =
-      totalPagesRead === pageCount ? BookStatus.COMPLETED : book.status;
+      totalPagesRead === actualPageCount ? BookStatus.COMPLETED : book.status;
+    const totalReadingSpeed =
+      totalSpentTime > 0
+        ? Math.round(totalPagesRead / (totalSpentTime / 60))
+        : 0;
     const finishedAt =
       status === BookStatus.COMPLETED
         ? moment().toISOString()
         : book.finishedAt;
     const estimatedTime = this.estimateTimeLeft(
       totalPagesRead,
-      pageCount,
+      actualPageCount,
       totalSpentTime,
     );
 
@@ -136,6 +139,7 @@ export class SessionsService {
         estimatedTime,
         pagesRead: totalPagesRead,
         spentTime: totalSpentTime,
+        readingSpeed: totalReadingSpeed,
       },
     });
 

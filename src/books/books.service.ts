@@ -179,6 +179,7 @@ export class BooksService {
       data: {
         profileId,
         bookId: book.id,
+        actualPageCount: book.pageCount ?? 0,
       },
       include: { book: true },
     });
