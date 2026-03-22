@@ -9,6 +9,7 @@ import { isbnDto } from 'src/types/isbn.dto';
 import { StartSessionRequestDto } from './dto/start-session-request-dto';
 import { EndSessionRequestDto } from './dto/end-session-request.dto';
 import moment from 'moment';
+import { Sessions } from 'generated/prisma/browser';
 
 @Injectable()
 export class SessionsService {
@@ -27,13 +28,42 @@ export class SessionsService {
     return Math.round(pagesLeft / pagesPerMinute);
   }
 
+  private compareWithPrevious(sessions: Sessions[]) {
+    const lastIndex = sessions.length - 1;
+
+    return sessions.map((session, index) => {
+      if (index === lastIndex) {
+        return { ...session, improvedFromPrevious: null };
+      }
+
+      const prev = sessions[index + 1];
+      const readMorePages = (session.pagesRead ?? 0) > (prev.pagesRead ?? 0);
+      const readLonger = (session.duration ?? 0) > (prev.duration ?? 0);
+      const readFaster = (session.readingSpeed ?? 0) > (prev.readingSpeed ?? 0);
+
+      const improved = [readMorePages, readLonger, readFaster].filter(
+        Boolean,
+      ).length;
+      const declined = [readMorePages, readLonger, readFaster].filter(
+        (v) => !v,
+      ).length;
+      const improvedFromPrevious =
+        improved === declined ? null : improved > declined;
+
+      return { ...session, improvedFromPrevious };
+    });
+  }
+
   async getSessions(id: string, { isbn }: isbnDto) {
-    return await this.prisma.sessions.findMany({
+    const rows = await this.prisma.sessions.findMany({
       where: {
         usersBook: { profileId: id, book: { isbn } },
         status: { not: SessionStatus.CANCELLED },
       },
+      orderBy: { startedAt: 'desc' },
     });
+
+    return this.compareWithPrevious(rows);
   }
 
   async getActiveSession(profileId: string) {

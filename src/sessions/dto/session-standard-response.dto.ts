@@ -78,4 +78,12 @@ export class SessionStandardResponseDto {
     nullable: true,
   })
   readingSpeed: number;
+
+  @Expose()
+  @ApiProperty({
+    description: 'Comparison between current and previous session',
+    type: Boolean,
+    nullable: true,
+  })
+  improvedFromPrevious: boolean;
 }
