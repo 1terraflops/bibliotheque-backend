@@ -5,11 +5,11 @@ import {
 } from '@nestjs/common';
 import { BookStatus, SessionStatus } from 'generated/prisma/enums';
 import { PrismaService } from 'src/database/prisma.service';
-import { isbnDto } from 'src/types/isbn.dto';
 import { StartSessionRequestDto } from './dto/start-session-request-dto';
 import { EndSessionRequestDto } from './dto/end-session-request.dto';
 import moment from 'moment';
 import { Sessions } from 'generated/prisma/browser';
+import { GetSessionsRequestDto } from './dto/get-sessions-request.dto';
 
 @Injectable()
 export class SessionsService {
@@ -30,40 +30,48 @@ export class SessionsService {
 
   private compareWithPrevious(sessions: Sessions[]) {
     const lastIndex = sessions.length - 1;
-
     return sessions.map((session, index) => {
       if (index === lastIndex) {
         return { ...session, improvedFromPrevious: null };
       }
-
       const prev = sessions[index + 1];
-      const readMorePages = (session.pagesRead ?? 0) > (prev.pagesRead ?? 0);
-      const readLonger = (session.duration ?? 0) > (prev.duration ?? 0);
-      const readFaster = (session.readingSpeed ?? 0) > (prev.readingSpeed ?? 0);
 
-      const improved = [readMorePages, readLonger, readFaster].filter(
-        Boolean,
-      ).length;
-      const declined = [readMorePages, readLonger, readFaster].filter(
-        (v) => !v,
-      ).length;
-      const improvedFromPrevious =
-        improved === declined ? null : improved > declined;
+      const cmp = (a: number, b: number) => (a > b ? 1 : a < b ? -1 : 0);
+
+      const scores = [
+        cmp(session.pagesRead ?? 0, prev.pagesRead ?? 0),
+        cmp(session.duration ?? 0, prev.duration ?? 0),
+        cmp(session.readingSpeed ?? 0, prev.readingSpeed ?? 0),
+      ];
+
+      const total = scores.reduce((sum, v) => sum + v, 0);
+      const improvedFromPrevious = total === 0 ? null : total > 0;
 
       return { ...session, improvedFromPrevious };
     });
   }
 
-  async getSessions(id: string, { isbn }: isbnDto) {
+  async getSessions(
+    id: string,
+    { isbn, cursor, take = 20 }: GetSessionsRequestDto,
+  ) {
     const rows = await this.prisma.sessions.findMany({
       where: {
         usersBook: { profileId: id, book: { isbn } },
         status: { not: SessionStatus.CANCELLED },
       },
       orderBy: { startedAt: 'desc' },
+      take,
+      ...(cursor && {
+        cursor: { id: cursor },
+        skip: 1,
+      }),
     });
 
-    return this.compareWithPrevious(rows);
+    return {
+      data: this.compareWithPrevious(rows),
+      nextCursor: rows[rows.length - 1]?.id ?? null,
+    };
   }
 
   async getActiveSession(profileId: string) {
