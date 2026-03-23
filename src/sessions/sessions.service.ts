@@ -55,6 +55,8 @@ export class SessionsService {
     id: string,
     { isbn, cursor, take = 20 }: GetSessionsRequestDto,
   ) {
+    const cursorId = cursor ? Number(cursor) : undefined;
+
     const rows = await this.prisma.sessions.findMany({
       where: {
         usersBook: { profileId: id, book: { isbn } },
@@ -62,8 +64,8 @@ export class SessionsService {
       },
       orderBy: { startedAt: 'desc' },
       take: take + 1,
-      ...(cursor && {
-        cursor: { id: cursor },
+      ...(cursorId && {
+        cursor: { id: cursorId },
         skip: 1,
       }),
     });
