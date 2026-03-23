@@ -61,17 +61,19 @@ export class SessionsService {
         status: { not: SessionStatus.CANCELLED },
       },
       orderBy: { startedAt: 'desc' },
-      take,
+      take: take + 1,
       ...(cursor && {
         cursor: { id: cursor },
         skip: 1,
       }),
     });
 
+    const hasNextPage = rows.length > take;
+    const data = hasNextPage ? rows.slice(0, take) : rows;
+
     return {
-      data: this.compareWithPrevious(rows),
-      nextCursor:
-        rows.length === take ? (rows[rows.length - 1]?.id ?? null) : null,
+      data: this.compareWithPrevious(data),
+      nextCursor: hasNextPage ? (rows[take - 1]?.id ?? null) : null,
     };
   }
 
