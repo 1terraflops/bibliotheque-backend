@@ -70,7 +70,8 @@ export class SessionsService {
 
     return {
       data: this.compareWithPrevious(rows),
-      nextCursor: rows[rows.length - 1]?.id ?? null,
+      nextCursor:
+        rows.length === take ? (rows[rows.length - 1]?.id ?? null) : null,
     };
   }
 
