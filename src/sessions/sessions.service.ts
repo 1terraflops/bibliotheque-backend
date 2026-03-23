@@ -55,28 +55,23 @@ export class SessionsService {
     id: string,
     { isbn, cursor, take = 20 }: GetSessionsRequestDto,
   ) {
-    console.log('PARAMS:', { cursor, take, isbn, cursorType: typeof cursor });
-    const cursorId = cursor ? Number(cursor) : undefined;
-
     const rows = await this.prisma.sessions.findMany({
       where: {
         usersBook: { profileId: id, book: { isbn } },
         status: { not: SessionStatus.CANCELLED },
       },
       orderBy: { startedAt: 'desc' },
-      take: take + 1,
-      ...(cursorId && {
-        cursor: { id: cursorId },
+      take,
+      ...(cursor && {
+        cursor: { id: cursor },
         skip: 1,
       }),
     });
 
-    const hasNextPage = rows.length > take;
-    const data = hasNextPage ? rows.slice(0, take) : rows;
-
     return {
-      data: this.compareWithPrevious(data),
-      nextCursor: hasNextPage ? (rows[take - 1]?.id ?? null) : null,
+      data: this.compareWithPrevious(rows),
+      nextCursor:
+        rows.length === take ? (rows[rows.length - 1]?.id ?? null) : null,
     };
   }
 
