@@ -55,6 +55,7 @@ export class SessionsService {
     id: string,
     { isbn, cursor, take = 20 }: GetSessionsRequestDto,
   ) {
+    console.log('PARAMS:', { cursor, take, isbn, cursorType: typeof cursor });
     const cursorId = cursor ? Number(cursor) : undefined;
 
     const rows = await this.prisma.sessions.findMany({
