@@ -50,4 +50,13 @@ export class UpdateBookRequestDto {
   @IsOptional()
   @IsBoolean()
   isFavorite?: boolean;
+
+  @ApiProperty({
+    description: 'The actual number of pages in the book',
+    example: 356,
+    required: false,
+  })
+  @IsOptional()
+  @IsNumber()
+  actualPageCount?: number;
 }
