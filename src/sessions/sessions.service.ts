@@ -10,6 +10,8 @@ import { EndSessionRequestDto } from './dto/end-session-request.dto';
 import moment from 'moment';
 import { Sessions } from 'generated/prisma/browser';
 import { GetSessionsRequestDto } from './dto/get-sessions-request.dto';
+import { GetChartRequestDto } from './dto/get-chart-request.dto';
+import { findAvg } from 'src/_helpers/findAverage';
 
 @Injectable()
 export class SessionsService {
@@ -83,6 +85,51 @@ export class SessionsService {
       },
       orderBy: { startedAt: 'desc' },
     });
+  }
+
+  async getChart(profileId: string, dto: GetChartRequestDto) {
+    const rows = await this.prisma.sessions.findMany({
+      where: {
+        profileId,
+        bookId: dto.id,
+        status: SessionStatus.ENDED,
+      },
+      orderBy: { startedAt: 'desc' },
+      take: 10,
+    });
+
+    if (rows.length < 2) {
+      return {
+        pages: { data: [], avg: 0 },
+        durations: { data: [], avg: 0 },
+        speeds: { data: [], avg: 0 },
+      };
+    }
+
+    const sessions = rows.reverse();
+
+    const pages = sessions.map((session) => session.pagesRead);
+    const durations = sessions.map((session) => session.duration);
+    const speeds = sessions.map((session) => session.readingSpeed);
+
+    const avgPages = findAvg(pages);
+    const avgDuration = findAvg(durations);
+    const avgSpeed = findAvg(speeds);
+
+    return {
+      pages: {
+        data: pages,
+        avg: avgPages,
+      },
+      durations: {
+        data: durations,
+        avg: avgDuration,
+      },
+      speeds: {
+        data: speeds,
+        avg: avgSpeed,
+      },
+    };
   }
 
   async startSession(profileId: string, dto: StartSessionRequestDto) {
