@@ -8,9 +8,9 @@ import {
   SerializeOptions,
 } from '@nestjs/common';
 import { SessionsService } from './sessions.service';
-import { StandardResponses } from 'src/decorators/standard-responses.decorator';
+import { StandardResponses } from 'src/_decorators/standard-responses.decorator';
 import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
-import { CurrentUser } from 'src/decorators/current-user.decorator';
+import { CurrentUser } from 'src/_decorators/current-user.decorator';
 import { StartSessionRequestDto } from './dto/start-session-request-dto';
 import { SessionStandardResponseDto } from './dto/session-standard-response.dto';
 import { EndSessionRequestDto } from './dto/end-session-request.dto';

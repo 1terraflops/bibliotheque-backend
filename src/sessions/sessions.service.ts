@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { BookStatus, SessionStatus } from 'generated/prisma/enums';
-import { PrismaService } from 'src/database/prisma.service';
+import { PrismaService } from 'src/_database/prisma.service';
 import { StartSessionRequestDto } from './dto/start-session-request-dto';
 import { EndSessionRequestDto } from './dto/end-session-request.dto';
 import moment from 'moment';

@@ -13,11 +13,11 @@ import { BooksService } from './books.service';
 import { GetBookByISBNRequestDto } from './dto/get-book-by-isbn-request.dto';
 import { AddBookByISBNRequestDto } from './dto/add-book-request.dto';
 import { BookResponseDto } from './dto/book-response.dto';
-import { CurrentUser } from 'src/decorators/current-user.decorator';
+import { CurrentUser } from 'src/_decorators/current-user.decorator';
 import { UserBookResponseDto } from './dto/user-book-response.dto';
 import { DeleteBookRequestDto } from './dto/delete-book-request.dto';
 import { UpdateBookRequestDto } from './dto/update-book-request.dto';
-import { isbnDto } from '../types/isbn.dto';
+import { isbnDto } from '../_types/isbn.dto';
 import { GetAllUsersBooksRequestDto } from './dto/get-all-users-books-request.dto';
 import { Throttle } from '@nestjs/throttler';
 import {
@@ -28,7 +28,7 @@ import {
   ApiOkResponse,
   ApiTags,
 } from '@nestjs/swagger';
-import { StandardResponses } from 'src/decorators/standard-responses.decorator';
+import { StandardResponses } from 'src/_decorators/standard-responses.decorator';
 import { DashboardResponseDto } from './dto/dashboard-response.dto';
 
 @ApiTags('books')

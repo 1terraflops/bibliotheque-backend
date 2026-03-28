@@ -6,9 +6,9 @@ import {
 } from '@nestjs/common';
 import { Request } from 'express';
 import { User } from '@supabase/supabase-js';
-import { supabase } from 'src/database/supabase';
+import { supabase } from 'src/_database/supabase';
 import { Reflector } from '@nestjs/core';
-import { IS_PUBLIC_KEY } from 'src/decorators/public.decorator';
+import { IS_PUBLIC_KEY } from 'src/_decorators/public.decorator';
 
 interface AuthenticatedRequest extends Request {
   user: User;

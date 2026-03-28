@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { PrismaServiceModule } from './database/prisma.module';
+import { PrismaServiceModule } from './_database/prisma.module';
 import { ConfigModule } from '@nestjs/config';
 import { AuthService } from './auth/auth.service';
 import { AuthModule } from './auth/auth.module';
 import { BooksModule } from './books/books.module';
 import { APP_GUARD } from '@nestjs/core';
-import { AuthGuard } from './guards/auth.guard';
+import { AuthGuard } from './_guards/auth.guard';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { SessionsModule } from './sessions/sessions.module';

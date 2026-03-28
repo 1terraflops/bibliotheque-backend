@@ -1,7 +1,7 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { GetTokenDto } from './dto/get-token';
-import { Public } from 'src/decorators/public.decorator';
+import { Public } from 'src/_decorators/public.decorator';
 import {
   ApiCreatedResponse,
   ApiTags,

@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { GetTokenDto } from './dto/get-token';
-import { supabase } from 'src/database/supabase';
+import { supabase } from 'src/_database/supabase';
 
 @Injectable()
 export class AuthService {
