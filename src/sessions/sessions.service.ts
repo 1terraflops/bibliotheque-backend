@@ -154,7 +154,7 @@ export class SessionsService {
     );
     const totalSpentTime = (book.spentTime ?? 0) + duration;
     const status =
-      totalPagesRead === actualPageCount ? BookStatus.COMPLETED : book.status;
+      endPage >= actualPageCount ? BookStatus.COMPLETED : book.status;
     const totalReadingSpeed =
       totalSpentTime > 0
         ? Math.round(totalPagesRead / (totalSpentTime / 60))
@@ -164,7 +164,7 @@ export class SessionsService {
         ? moment().toISOString()
         : book.finishedAt;
     const estimatedTime = this.estimateTimeLeft(
-      totalPagesRead,
+      endPage,
       actualPageCount,
       totalSpentTime,
     );
@@ -176,7 +176,7 @@ export class SessionsService {
         status,
         finishedAt,
         estimatedTime,
-        pagesRead: totalPagesRead,
+        pagesRead: endPage,
         spentTime: totalSpentTime,
         readingSpeed: totalReadingSpeed,
       },
