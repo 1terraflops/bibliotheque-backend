@@ -1,0 +1,16 @@
+model BooksReviews {
+  id          Int      @id @default(autoincrement())
+  profileId   String   @map("profileId") @db.Uuid
+  bookId      Int      @map("bookId")
+
+  review      String   @map("review")
+  hasSpoilers Boolean  @default(false) @map("has_spoilers")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  profile     Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  book        Books    @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, bookId])
+  @@map("books_reviews")
+  @@schema("public")
+}

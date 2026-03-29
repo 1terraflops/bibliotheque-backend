@@ -13,6 +13,7 @@ model UsersBooks {
   status          BookStatus @default(NOT_STARTED)
   actualPageCount Int        @default(0) @map("actual_page_count")
   pagesRead       Int        @default(0)
+  cover           String?    @map("cover")
   startedAt       DateTime?  @map("started_at")
   finishedAt      DateTime?  @map("finished_at")
   updatedAt       DateTime?  @updatedAt @map("updated_at")
