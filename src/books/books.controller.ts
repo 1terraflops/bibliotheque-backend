@@ -114,7 +114,7 @@ export class BooksController {
   @SerializeOptions({ type: AddReviewResponseDto })
   @ApiCreatedResponse({
     description: 'Review added successfully',
-    type: UserBookResponseDto,
+    type: AddReviewResponseDto,
   })
   @ApiConflictResponse({
     description: 'The review already exists for this book',
