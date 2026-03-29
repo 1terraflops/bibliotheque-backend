@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { ProfilesService } from './profiles.service';
 import { CurrentUser } from 'src/_decorators/current-user.decorator';
-import { ApiOkResponse } from '@nestjs/swagger';
+import { ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { GetReviewsRequestDto } from './dto/get-reviews-request.dto';
 import { GetReviewsPaginatedResponseDto } from './dto/get-reviews-paginated-response.dto';
 import { GetReviewsResponseDto } from './dto/get-reviews-response.dto';
@@ -17,6 +17,7 @@ import { GetReviewsResponseDto } from './dto/get-reviews-response.dto';
   path: 'profiles',
   version: '1',
 })
+@ApiTags('profiles')
 export class ProfilesController {
   constructor(private readonly profilesService: ProfilesService) {}
 
