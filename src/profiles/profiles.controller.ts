@@ -1,5 +1,6 @@
 import {
   Controller,
+  Delete,
   Get,
   Param,
   Query,
@@ -10,6 +11,7 @@ import { CurrentUser } from 'src/_decorators/current-user.decorator';
 import { ApiOkResponse } from '@nestjs/swagger';
 import { GetReviewsRequestDto } from './dto/get-reviews-request.dto';
 import { GetReviewsPaginatedResponseDto } from './dto/get-reviews-paginated-response.dto';
+import { GetReviewsResponseDto } from './dto/get-reviews-response.dto';
 
 @Controller({
   path: 'profiles',
@@ -42,5 +44,15 @@ export class ProfilesController {
     @Query() dto: GetReviewsRequestDto,
   ) {
     return this.profilesService.getUserReviews(dto, username);
+  }
+
+  @Delete('review/:id')
+  @SerializeOptions({ type: GetReviewsResponseDto })
+  @ApiOkResponse({
+    description: 'Review deleted successfully',
+    type: [GetReviewsPaginatedResponseDto],
+  })
+  deleteReview(@Param('id') id: number, @CurrentUser('id') profileId: string) {
+    return this.profilesService.deleteReview(id, profileId);
   }
 }
