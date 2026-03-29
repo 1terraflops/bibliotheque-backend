@@ -30,6 +30,8 @@ import {
 } from '@nestjs/swagger';
 import { StandardResponses } from 'src/_decorators/standard-responses.decorator';
 import { DashboardResponseDto } from './dto/dashboard-response.dto';
+import { AddReviewResponseDto } from './dto/add-review-response.dto';
+import { AddReviewRequestDto } from './dto/add-review-request.dto';
 
 @ApiTags('books')
 @StandardResponses()
@@ -101,6 +103,22 @@ export class BooksController {
     @CurrentUser('id') userId: string,
   ) {
     return await this.booksService.addBookToProfile(dto, userId);
+  }
+
+  @Post('review')
+  @SerializeOptions({ type: AddReviewResponseDto })
+  @ApiCreatedResponse({
+    description: 'Review added successfully',
+    type: UserBookResponseDto,
+  })
+  @ApiConflictResponse({
+    description: 'The review already exists for this book',
+  })
+  async addReview(
+    @Body() dto: AddReviewRequestDto,
+    @CurrentUser('id') id: string,
+  ) {
+    return await this.booksService.addReview(dto, id);
   }
 
   @Patch(':isbn')

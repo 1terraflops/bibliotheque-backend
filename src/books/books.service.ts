@@ -17,7 +17,8 @@ import { isbnDto } from '../_types/isbn.dto';
 import { GetAllUsersBooksRequestDto } from './dto/get-all-users-books-request.dto';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { type Cache } from 'cache-manager';
-import { Books, BookStatus } from 'generated/prisma/client';
+import { Books, BookStatus, Prisma } from 'generated/prisma/client';
+import { AddReviewRequestDto } from './dto/add-review-request.dto';
 
 const TTL = 1000 * 60;
 
@@ -157,6 +158,24 @@ export class BooksService {
     };
 
     return [...statusResults, favorites];
+  }
+
+  async addReview(dto: AddReviewRequestDto, profileId: string) {
+    const { id, review, hasSpoilers } = dto;
+
+    try {
+      return await this.prisma.booksReviews.create({
+        data: { profileId, bookId: id, review, hasSpoilers },
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2002'
+      ) {
+        throw new ConflictException('You have already reviewed this book');
+      }
+      throw error;
+    }
   }
 
   async addBookToProfile(dto: AddBookByISBNRequestDto, profileId: string) {
