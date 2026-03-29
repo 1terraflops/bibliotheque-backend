@@ -10,12 +10,14 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { SessionsModule } from './sessions/sessions.module';
 import { ProfilesModule } from './profiles/profiles.module';
+import { StorageModule } from './_storage/storage.module';
 
 @Module({
   imports: [
     AuthModule,
     BooksModule,
     PrismaServiceModule,
+    StorageModule,
     ConfigModule.forRoot({ isGlobal: true }),
     CacheModule.register({ isGlobal: true }),
     ThrottlerModule.forRoot([
