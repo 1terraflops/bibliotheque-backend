@@ -201,6 +201,7 @@ export class BooksService {
         profileId,
         bookId: book.id,
         actualPageCount: book.pageCount ?? 0,
+        cover: book.coverUrl,
       },
       include: { book: true },
     });

@@ -19,6 +19,12 @@ export class UserBookResponseDto {
 
   @Expose()
   @ApiProperty({
+    description: 'Url with book cover',
+  })
+  cover: string;
+
+  @Expose()
+  @ApiProperty({
     example: 15,
   })
   actualPageCount: number;
