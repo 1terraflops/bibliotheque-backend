@@ -19,6 +19,7 @@ import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { type Cache } from 'cache-manager';
 import { Books, BookStatus, Prisma } from 'generated/prisma/client';
 import { AddReviewRequestDto } from './dto/add-review-request.dto';
+import { SupabaseStorageService } from 'src/_storage/supabase_storage.service';
 
 const TTL = 1000 * 60;
 
@@ -27,6 +28,7 @@ export class BooksService {
   constructor(
     private readonly httpService: HttpService,
     private readonly prisma: PrismaService,
+    private readonly storage: SupabaseStorageService,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
   ) {}
 
@@ -201,6 +203,23 @@ export class BooksService {
         actualPageCount: book.pageCount ?? 0,
       },
       include: { book: true },
+    });
+  }
+
+  async uploadBookCover(
+    file: Express.Multer.File,
+    bookId: number,
+    profileId: string,
+  ) {
+    const url = await this.storage.upload(
+      file,
+      'covers',
+      `${profileId}/${bookId}`,
+    );
+
+    return await this.prisma.usersBooks.updateMany({
+      where: { bookId, profileId },
+      data: { cover: url },
     });
   }
 

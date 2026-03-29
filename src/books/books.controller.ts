@@ -8,6 +8,8 @@ import {
   Post,
   Query,
   SerializeOptions,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { BooksService } from './books.service';
 import { GetBookByISBNRequestDto } from './dto/get-book-by-isbn-request.dto';
@@ -32,6 +34,9 @@ import { StandardResponses } from 'src/_decorators/standard-responses.decorator'
 import { DashboardResponseDto } from './dto/dashboard-response.dto';
 import { AddReviewResponseDto } from './dto/add-review-response.dto';
 import { AddReviewRequestDto } from './dto/add-review-request.dto';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
+import { FileValidationPipe } from 'src/_pipes/file-validation.pipe';
 
 @ApiTags('books')
 @StandardResponses()
@@ -119,6 +124,16 @@ export class BooksController {
     @CurrentUser('id') id: string,
   ) {
     return await this.booksService.addReview(dto, id);
+  }
+
+  @Patch('cover/:id')
+  @UseInterceptors(FileInterceptor('file', { storage: memoryStorage() }))
+  async uploadBookCover(
+    @Param('id') id: number,
+    @UploadedFile(new FileValidationPipe()) file: Express.Multer.File,
+    @CurrentUser('id') profileId: string,
+  ) {
+    return await this.booksService.uploadBookCover(file, id, profileId);
   }
 
   @Patch(':isbn')
