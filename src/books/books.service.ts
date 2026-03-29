@@ -17,7 +17,7 @@ import { isbnDto } from '../_types/isbn.dto';
 import { GetAllUsersBooksRequestDto } from './dto/get-all-users-books-request.dto';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { type Cache } from 'cache-manager';
-import { Books, BookStatus, Prisma } from 'generated/prisma/client';
+import { Books, BookStatus } from 'generated/prisma/client';
 import { AddReviewRequestDto } from './dto/add-review-request.dto';
 import { SupabaseStorageService } from 'src/_storage/supabase_storage.service';
 
@@ -165,19 +165,11 @@ export class BooksService {
   async addReview(dto: AddReviewRequestDto, profileId: string) {
     const { id, review, hasSpoilers } = dto;
 
-    try {
-      return await this.prisma.booksReviews.create({
-        data: { profileId, bookId: id, review, hasSpoilers },
-      });
-    } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2002'
-      ) {
-        throw new ConflictException('You have already reviewed this book');
-      }
-      throw error;
-    }
+    return await this.prisma.booksReviews.upsert({
+      where: { profileId_bookId: { profileId, bookId: id } },
+      create: { profileId, bookId: id, review, hasSpoilers },
+      update: { review, hasSpoilers },
+    });
   }
 
   async addBookToProfile(dto: AddBookByISBNRequestDto, profileId: string) {
