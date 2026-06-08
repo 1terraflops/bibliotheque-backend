@@ -25,6 +25,8 @@ const TTL = 1000 * 60;
 
 @Injectable()
 export class BooksService {
+  private readonly GBOOKS_API_KEY = process.env.GOOGLE_BOOKS_API_KEY;
+
   constructor(
     private readonly httpService: HttpService,
     private readonly prisma: PrismaService,
@@ -50,7 +52,7 @@ export class BooksService {
   private async findInGoogleBooks(dto: isbnDto) {
     const response = await firstValueFrom(
       this.httpService.get<GoogleBooksResponseDto>(
-        `https://www.googleapis.com/books/v1/volumes?q=isbn:${dto.isbn}`,
+        `https://www.googleapis.com/books/v1/volumes?q=isbn:${dto.isbn}&key=${this.GBOOKS_API_KEY}`,
       ),
     );
 
