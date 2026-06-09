@@ -37,6 +37,7 @@ import { AddReviewRequestDto } from './dto/add-review-request.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { FileValidationPipe } from 'src/_pipes/file-validation.pipe';
+import { GetUserReadingStatsResponseDto } from './dto/get-user-reading-stats-response.dto';
 
 @ApiTags('books')
 @StandardResponses()
@@ -92,6 +93,16 @@ export class BooksController {
   })
   async getDashboard(@CurrentUser('id') id: string) {
     return this.booksService.getDashboard(id);
+  }
+
+  @Get('stats')
+  @SerializeOptions({ type: GetUserReadingStatsResponseDto })
+  @ApiOkResponse({
+    description: 'Get reading stats for current user',
+    type: GetUserReadingStatsResponseDto,
+  })
+  async getUserReadingStats(@CurrentUser('id') profileId: string) {
+    return this.booksService.getUserReadingStats(profileId);
   }
 
   @Post()

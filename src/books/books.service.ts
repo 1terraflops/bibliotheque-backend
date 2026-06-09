@@ -17,9 +17,15 @@ import { isbnDto } from '../_types/isbn.dto';
 import { GetAllUsersBooksRequestDto } from './dto/get-all-users-books-request.dto';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { type Cache } from 'cache-manager';
-import { Books, BookStatus } from 'generated/prisma/client';
+import {
+  Books,
+  BookStatus,
+  Sessions,
+  SessionStatus,
+} from 'generated/prisma/client';
 import { AddReviewRequestDto } from './dto/add-review-request.dto';
 import { SupabaseStorageService } from 'src/_storage/supabase_storage.service';
+import moment from 'moment';
 
 const TTL = 1000 * 60;
 
@@ -257,5 +263,117 @@ export class BooksService {
         },
       },
     });
+  }
+
+  async getFinishedBooksCount(profileId: string) {
+    return this.prisma.usersBooks.count({
+      where: { profileId, status: BookStatus.COMPLETED },
+    });
+  }
+
+  async getUserReadingStats(profileId: string) {
+    const userBooks = await this.prisma.usersBooks.findMany({
+      where: { profileId },
+    });
+
+    const sessions = await this.prisma.sessions.findMany({
+      where: {
+        profileId,
+        status: { not: SessionStatus.CANCELLED },
+      },
+    });
+
+    const booksRead = await this.getFinishedBooksCount(profileId);
+
+    const pagesRead = userBooks.reduce(
+      (sum, book) => sum + (book.pagesRead ?? 0),
+      0,
+    );
+
+    const totalSessions = sessions.length;
+
+    const totalSessionDuration = sessions.reduce(
+      (sum, session) => sum + (session.duration ?? 0),
+      0,
+    );
+
+    const avgSessionDuration =
+      totalSessions > 0 ? totalSessionDuration / totalSessions : 0;
+
+    const avgReadingSpeed =
+      totalSessionDuration > 0 ? pagesRead / (totalSessionDuration / 60) : 0;
+
+    const avgPagesPerSession =
+      totalSessions > 0 ? pagesRead / totalSessions : 0;
+
+    const durations = sessions.map((s) => s.duration ?? 0);
+
+    const longestSession = durations.length > 0 ? Math.max(...durations) : 0;
+
+    const timeDistribution =
+      sessions.length > 0
+        ? this.calculateTimeDistribution(sessions)
+        : {
+            night: 0,
+            morning: 0,
+            afternoon: 0,
+            evening: 0,
+          };
+
+    const mostCommonTimeOfTheDay =
+      this.getMostCommonTimeOfDay(timeDistribution);
+
+    return {
+      booksRead,
+      pagesRead,
+      totalSessions,
+      totalSessionDuration,
+      avgSessionDuration: Math.round(avgSessionDuration),
+      longestSession,
+      avgReadingSpeed: Math.round(avgReadingSpeed),
+      avgPagesPerSession: Math.round(avgPagesPerSession),
+      mostCommonTimeOfTheDay,
+    };
+  }
+
+  private getMostCommonTimeOfDay(buckets: {
+    night: number;
+    morning: number;
+    afternoon: number;
+    evening: number;
+  }) {
+    return Object.entries(buckets).reduce((max, current) => {
+      return current[1] > max[1] ? current : max;
+    })[0];
+  }
+
+  private calculateTimeDistribution(rawSessions: Sessions[]) {
+    const buckets = {
+      night: 0,
+      morning: 0,
+      afternoon: 0,
+      evening: 0,
+    };
+
+    rawSessions.forEach((session) => {
+      const start = moment(session.startedAt);
+      const end = moment(session.finishedAt);
+
+      const durationMinutes = end.diff(start, 'minutes');
+      const mid = moment(start).add(durationMinutes / 2, 'minutes');
+      const hour = mid.hour();
+
+      if (hour < 6) {
+        buckets.night += durationMinutes;
+      } else if (hour < 12) {
+        buckets.morning += durationMinutes;
+      } else if (hour < 18) {
+        buckets.afternoon += durationMinutes;
+      } else {
+        buckets.evening += durationMinutes;
+      }
+    });
+
+    return buckets;
   }
 }
