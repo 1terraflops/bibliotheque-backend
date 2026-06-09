@@ -376,4 +376,37 @@ export class BooksService {
 
     return buckets;
   }
+
+  async getUserReadingHeatmapData(
+    profileId: string,
+  ): Promise<{ heatmapData: { date: string; count: number }[] }> {
+    const since = new Date(Date.now() - 120 * 24 * 60 * 60 * 1000);
+
+    const sessions = await this.prisma.sessions.findMany({
+      where: {
+        profileId,
+        status: SessionStatus.ENDED,
+        startedAt: { gte: since },
+      },
+      select: { startedAt: true, duration: true },
+    });
+
+    const minutesByDate = sessions.reduce<Record<string, number>>(
+      (acc, session) => {
+        const date = session.startedAt.toISOString().split('T')[0];
+        acc[date] = (acc[date] ?? 0) + (session?.duration ?? 0);
+        return acc;
+      },
+      {},
+    );
+
+    const heatmapData = Object.entries(minutesByDate).map(
+      ([date, totalMinutes]) => ({
+        date,
+        count: Math.min(Math.round((totalMinutes / 60) * 10) / 10, 4),
+      }),
+    );
+
+    return { heatmapData };
+  }
 }

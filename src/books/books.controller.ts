@@ -38,6 +38,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { FileValidationPipe } from 'src/_pipes/file-validation.pipe';
 import { GetUserReadingStatsResponseDto } from './dto/get-user-reading-stats-response.dto';
+import { GetHeatmapDataResponseDto } from './dto/get-heatmap-data-response.dto';
 
 @ApiTags('books')
 @StandardResponses()
@@ -103,6 +104,16 @@ export class BooksController {
   })
   async getUserReadingStats(@CurrentUser('id') profileId: string) {
     return this.booksService.getUserReadingStats(profileId);
+  }
+
+  @Get('stats/heatmap')
+  @SerializeOptions({ type: GetHeatmapDataResponseDto })
+  @ApiOkResponse({
+    description: 'Get reading stats for current user',
+    type: GetHeatmapDataResponseDto,
+  })
+  async getUserReadingHeatmapData(@CurrentUser('id') profileId: string) {
+    return this.booksService.getUserReadingHeatmapData(profileId);
   }
 
   @Post()
