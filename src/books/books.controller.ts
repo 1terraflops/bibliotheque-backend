@@ -39,6 +39,8 @@ import { memoryStorage } from 'multer';
 import { FileValidationPipe } from 'src/_pipes/file-validation.pipe';
 import { GetUserReadingStatsResponseDto } from './dto/get-user-reading-stats-response.dto';
 import { GetHeatmapDataResponseDto } from './dto/get-heatmap-data-response.dto';
+import { GetReadingHistoryRequestDto } from './dto/get-reading-history-request.dto';
+import { GetReadingHistoryResponseDto } from './dto/get-reading-history-respose.dto';
 
 @ApiTags('books')
 @StandardResponses()
@@ -114,6 +116,19 @@ export class BooksController {
   })
   async getUserReadingHeatmapData(@CurrentUser('id') profileId: string) {
     return this.booksService.getUserReadingHeatmapData(profileId);
+  }
+
+  @Get('reading-history')
+  @SerializeOptions({ type: GetReadingHistoryResponseDto })
+  @ApiOkResponse({
+    description: 'Get reading history for current user',
+    type: GetReadingHistoryResponseDto,
+  })
+  async getReadingHistory(
+    @CurrentUser('id') profileId: string,
+    @Query() dto: GetReadingHistoryRequestDto,
+  ) {
+    return this.booksService.getReadingHistory(profileId, dto);
   }
 
   @Post()

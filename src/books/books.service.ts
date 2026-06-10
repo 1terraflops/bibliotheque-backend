@@ -26,6 +26,7 @@ import {
 import { AddReviewRequestDto } from './dto/add-review-request.dto';
 import { SupabaseStorageService } from 'src/_storage/supabase_storage.service';
 import moment from 'moment';
+import { GetReadingHistoryRequestDto } from './dto/get-reading-history-request.dto';
 
 const TTL = 1000 * 60;
 
@@ -408,5 +409,41 @@ export class BooksService {
     );
 
     return { heatmapData };
+  }
+
+  async getReadingHistory(profileId: string, dto: GetReadingHistoryRequestDto) {
+    const { cursor, take = 20 } = dto;
+    const safeTake = Math.min(take, 100);
+
+    const sessions = await this.prisma.sessions.findMany({
+      where: { profileId, status: SessionStatus.ENDED },
+      orderBy: { startedAt: 'desc' },
+      take: safeTake,
+      ...(cursor && {
+        cursor: { id: cursor },
+        skip: 1,
+      }),
+      include: { usersBook: { include: { book: true } } },
+    });
+
+    const history = sessions.map((session) => ({
+      id: session.id,
+      startedAt: session.startedAt,
+      finishedAt: session.finishedAt,
+      duration: session.duration,
+      readingSpeed: session.readingSpeed,
+      pagesRead: session.pagesRead,
+      title: session.usersBook.book.title,
+      author: session.usersBook.book.author,
+      cover: session.usersBook.cover,
+    }));
+
+    const nextCursor =
+      sessions.length === take ? sessions[sessions.length - 1].id : null;
+
+    return {
+      history,
+      cursor: nextCursor,
+    };
   }
 }
