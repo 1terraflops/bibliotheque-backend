@@ -41,6 +41,7 @@ import { GetUserReadingStatsResponseDto } from './dto/get-user-reading-stats-res
 import { GetHeatmapDataResponseDto } from './dto/get-heatmap-data-response.dto';
 import { GetReadingHistoryRequestDto } from './dto/get-reading-history-request.dto';
 import { GetReadingHistoryResponseDto } from './dto/get-reading-history-respose.dto';
+import { GetReviewsForBookResponseDto } from './dto/get-reviews-for-book-response.dto';
 
 @ApiTags('books')
 @StandardResponses()
@@ -129,6 +130,16 @@ export class BooksController {
     @Query() dto: GetReadingHistoryRequestDto,
   ) {
     return this.booksService.getReadingHistory(profileId, dto);
+  }
+
+  @Get('book-reviews/:isbn')
+  @SerializeOptions({ type: GetReviewsForBookResponseDto })
+  @ApiOkResponse({
+    description: 'Reviews returned successfully',
+    type: [GetReviewsForBookResponseDto],
+  })
+  async getReviewsForBook(@Param('isbn') isbn: string) {
+    return await this.booksService.getReviewsForBook(isbn);
   }
 
   @Post()

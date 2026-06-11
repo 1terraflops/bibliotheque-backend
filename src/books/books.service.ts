@@ -480,4 +480,13 @@ export class BooksService {
       cursor: nextCursor,
     };
   }
+
+  async getReviewsForBook(isbn: string) {
+    return this.prisma.booksReviews.findMany({
+      where: { book: { isbn } },
+      include: { profile: true },
+      take: 20,
+      orderBy: { createdAt: 'desc' },
+    });
+  }
 }
