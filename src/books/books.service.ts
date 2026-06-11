@@ -27,6 +27,7 @@ import { AddReviewRequestDto } from './dto/add-review-request.dto';
 import { SupabaseStorageService } from 'src/_storage/supabase_storage.service';
 import moment from 'moment';
 import { GetReadingHistoryRequestDto } from './dto/get-reading-history-request.dto';
+import { GetBookByNameRequestDto } from './dto/get-book-by-name-request.dto';
 
 const TTL = 1000 * 60;
 
@@ -68,6 +69,29 @@ export class BooksService {
     }
 
     return new NormalizedBookDto(response.data.items[0]);
+  }
+
+  async findByNameInGoogleBooks({ query }: GetBookByNameRequestDto) {
+    const response = await firstValueFrom(
+      this.httpService.get<GoogleBooksResponseDto>(
+        `https://www.googleapis.com/books/v1/volumes`,
+        {
+          params: {
+            q: query,
+            key: this.GBOOKS_API_KEY,
+            maxResults: 10,
+            langRestrict: 'en',
+            country: 'US',
+          },
+        },
+      ),
+    );
+
+    if (!response.data.items?.length) {
+      throw new NotFoundException('No such book found');
+    }
+
+    return response.data.items.map((book) => new NormalizedBookDto(book));
   }
 
   private async saveAndGetBook(dto: isbnDto) {

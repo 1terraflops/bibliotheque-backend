@@ -42,6 +42,7 @@ import { GetHeatmapDataResponseDto } from './dto/get-heatmap-data-response.dto';
 import { GetReadingHistoryRequestDto } from './dto/get-reading-history-request.dto';
 import { GetReadingHistoryResponseDto } from './dto/get-reading-history-respose.dto';
 import { GetReviewsForBookResponseDto } from './dto/get-reviews-for-book-response.dto';
+import { GetBookByNameRequestDto } from './dto/get-book-by-name-request.dto';
 
 @ApiTags('books')
 @StandardResponses()
@@ -130,6 +131,17 @@ export class BooksController {
     @Query() dto: GetReadingHistoryRequestDto,
   ) {
     return this.booksService.getReadingHistory(profileId, dto);
+  }
+
+  @Get('name')
+  @SerializeOptions({ type: BookResponseDto })
+  @ApiOkResponse({
+    description: 'Book returned successfully',
+    type: [BookResponseDto],
+  })
+  @Throttle({ default: { ttl: 1000, limit: 1 } })
+  async findByName(@Query() dto: GetBookByNameRequestDto) {
+    return this.booksService.findByNameInGoogleBooks(dto);
   }
 
   @Get('book-reviews/:isbn')
