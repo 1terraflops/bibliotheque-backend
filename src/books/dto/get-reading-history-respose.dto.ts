@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Expose } from 'class-transformer';
+import { Expose, Type } from 'class-transformer';
 
 class ReadingHistoryItem {
   @Expose()
@@ -66,13 +66,31 @@ class ReadingHistoryItem {
   cover: string;
 }
 
-export class GetReadingHistoryResponseDto {
+class ReadingHistoryGroup {
   @Expose()
   @ApiProperty({
-    description: "User's reading history",
+    description: 'Date of sessions (YYYY-MM-DD)',
+    example: '2026-06-11',
+  })
+  date: string;
+
+  @Expose()
+  @Type(() => ReadingHistoryItem)
+  @ApiProperty({
+    description: 'Sessions for this date',
     type: [ReadingHistoryItem],
   })
-  history: ReadingHistoryItem[];
+  sessions: ReadingHistoryItem[];
+}
+
+export class GetReadingHistoryResponseDto {
+  @Expose()
+  @Type(() => ReadingHistoryGroup)
+  @ApiProperty({
+    description: "User's reading history grouped by date",
+    type: [ReadingHistoryGroup],
+  })
+  history: ReadingHistoryGroup[];
 
   @Expose()
   @ApiProperty({

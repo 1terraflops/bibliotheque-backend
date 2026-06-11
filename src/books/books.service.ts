@@ -416,33 +416,67 @@ export class BooksService {
     const safeTake = Math.min(take, 100);
 
     const sessions = await this.prisma.sessions.findMany({
-      where: { profileId, status: SessionStatus.ENDED },
-      orderBy: { startedAt: 'desc' },
+      where: {
+        profileId,
+        status: SessionStatus.ENDED,
+      },
+      orderBy: {
+        startedAt: 'desc',
+      },
       take: safeTake,
       ...(cursor && {
         cursor: { id: cursor },
         skip: 1,
       }),
-      include: { usersBook: { include: { book: true } } },
+      include: {
+        usersBook: {
+          include: {
+            book: true,
+          },
+        },
+      },
     });
 
-    const history = sessions.map((session) => ({
-      id: session.id,
-      startedAt: session.startedAt,
-      finishedAt: session.finishedAt,
-      duration: session.duration,
-      readingSpeed: session.readingSpeed,
-      pagesRead: session.pagesRead,
-      title: session.usersBook.book.title,
-      author: session.usersBook.book.author,
-      cover: session.usersBook.cover,
-    }));
+    const groupedHistory = Object.values(
+      sessions.reduce<
+        Record<
+          string,
+          {
+            date: string;
+            sessions: any[];
+          }
+        >
+      >((acc, session) => {
+        const date = session.startedAt.toISOString().split('T')[0]; // YYYY-MM-DD
+
+        if (!acc[date]) {
+          acc[date] = {
+            date,
+            sessions: [],
+          };
+        }
+
+        acc[date].sessions.push({
+          id: session.id,
+          startedAt: session.startedAt,
+          finishedAt: session.finishedAt,
+          duration: session.duration,
+          readingSpeed: session.readingSpeed,
+          pagesRead: session.pagesRead,
+          title: session.usersBook.book.title,
+          author: session.usersBook.book.author,
+          cover: session.usersBook.cover,
+        });
+
+        return acc;
+      }, {}),
+    );
 
     const nextCursor =
-      sessions.length === take ? sessions[sessions.length - 1].id : null;
+      sessions.length === safeTake ? sessions[sessions.length - 1].id : null;
 
     return {
-      history,
+      history: groupedHistory,
       cursor: nextCursor,
     };
   }
