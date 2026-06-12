@@ -24,14 +24,7 @@ export class GetReviewsForBookResponseDto {
 
   @Expose()
   @ApiProperty({
-    description: 'Username of the user who published the review',
+    description: 'Username or fullname of the user who published the review',
   })
-  username: string;
-
-  @Expose()
-  @ApiProperty({
-    description: 'Full name of the user who published the review',
-    nullable: true,
-  })
-  full_name: string | null;
+  author: string;
 }

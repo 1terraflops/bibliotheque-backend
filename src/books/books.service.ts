@@ -506,11 +506,18 @@ export class BooksService {
   }
 
   async getReviewsForBook(isbn: string) {
-    return this.prisma.booksReviews.findMany({
+    const rows = await this.prisma.booksReviews.findMany({
       where: { book: { isbn } },
       include: { profile: true },
       take: 20,
       orderBy: { createdAt: 'desc' },
     });
+
+    return rows.map((r) => ({
+      review: r.review,
+      hasSpoilers: r.hasSpoilers,
+      createdAt: r.createdAt,
+      author: r.profile.full_name ?? r.profile.username,
+    }));
   }
 }
