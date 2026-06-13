@@ -8,14 +8,14 @@ export class EndSessionRequestDto {
     type: String,
     nullable: true,
   })
-  startedAt: string;
+  startedAt!: string;
 
   @IsISO8601()
   @ApiProperty({
     description: 'Session finish time',
     type: String,
   })
-  finishedAt: string;
+  finishedAt!: string;
 
   @IsNumber()
   @IsPositive()
@@ -24,7 +24,7 @@ export class EndSessionRequestDto {
     type: Number,
     nullable: true,
   })
-  startPage: number;
+  startPage!: number;
 
   @IsNumber()
   @IsPositive()
@@ -32,5 +32,5 @@ export class EndSessionRequestDto {
     description: 'Session end page',
     type: Number,
   })
-  endPage: number;
+  endPage!: number;
 }

@@ -8,6 +8,7 @@ import {
   ApiUnauthorizedResponse,
 } from '@nestjs/swagger';
 
+// auth is handled by supabase
 @Public()
 @ApiTags('auth')
 @Controller({

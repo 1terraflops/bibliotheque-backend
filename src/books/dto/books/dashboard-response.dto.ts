@@ -9,9 +9,9 @@ export class DashboardResponseDto {
     example: BookStatus.IN_PROGRESS,
     enum: BookStatus,
   })
-  status: BookStatus;
+  status!: BookStatus;
 
   @Expose()
   @ApiProperty()
-  books: UserBookResponseDto;
+  books!: UserBookResponseDto;
 }

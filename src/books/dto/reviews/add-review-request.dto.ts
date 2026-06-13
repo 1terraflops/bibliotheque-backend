@@ -8,7 +8,7 @@ export class AddReviewRequestDto {
     example: '12',
   })
   @IsNumber()
-  id: number;
+  id!: number;
 
   @ApiProperty({
     description: 'The review of the book',
@@ -19,7 +19,7 @@ export class AddReviewRequestDto {
   )
   @IsString()
   @Length(1, 2000)
-  review: string;
+  review!: string;
 
   @ApiProperty({
     description: 'Does this review contain spoilers?',

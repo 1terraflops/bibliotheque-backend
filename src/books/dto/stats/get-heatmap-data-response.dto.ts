@@ -7,14 +7,14 @@ export class HeatmapItemDto {
     description: 'Date in YYYY-MM-DD format',
     example: '2026-06-09',
   })
-  date: string;
+  date!: string;
 
   @Expose()
   @ApiProperty({
     description: 'Hours read on this date',
     example: 1.5,
   })
-  count: number;
+  count!: number;
 }
 
 export class GetHeatmapDataResponseDto {
@@ -23,5 +23,5 @@ export class GetHeatmapDataResponseDto {
     description: 'Array of heatmap items with date and count',
     type: [HeatmapItemDto],
   })
-  heatmapData: HeatmapItemDto[];
+  heatmapData!: HeatmapItemDto[];
 }

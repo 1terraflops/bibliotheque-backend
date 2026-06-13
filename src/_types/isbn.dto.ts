@@ -7,5 +7,5 @@ export class isbnDto {
     example: '9786175480083',
   })
   @IsISBN()
-  isbn: string;
+  isbn!: string;
 }

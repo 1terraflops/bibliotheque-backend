@@ -1,19 +1,18 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose, Type } from 'class-transformer';
-import { BookResponseDto } from 'src/books/dto/book-response.dto';
+import { BookResponseDto } from 'src/books/dto/books/book-response.dto';
 
-// get-reviews-response.dto.ts
 export class GetReviewsResponseDto {
   @Expose()
   @ApiProperty({ description: 'ID of the review', example: 12 })
-  id: number;
+  id!: number;
 
   @Expose()
   @ApiProperty({
     description: 'The review of the book',
     example: 'Great book, recommend it',
   })
-  review: string;
+  review!: string;
 
   @Expose()
   @ApiProperty({
@@ -21,17 +20,17 @@ export class GetReviewsResponseDto {
     example: true,
     default: false,
   })
-  hasSpoilers: boolean;
+  hasSpoilers!: boolean;
 
   @Expose()
   @ApiProperty({
     description: 'Date of review',
     example: '2026-02-18T00:00:00.000Z',
   })
-  createdAt: string;
+  createdAt!: string;
 
   @Expose()
   @ApiProperty({ description: 'Info about reviewed book' })
   @Type(() => BookResponseDto)
-  book: BookResponseDto;
+  book!: BookResponseDto;
 }

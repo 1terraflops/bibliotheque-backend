@@ -15,25 +15,25 @@ export class UserBookResponseDto {
     example: BookStatus.IN_PROGRESS,
     enum: BookStatus,
   })
-  status: BookStatus;
+  status!: BookStatus;
 
   @Expose()
   @ApiProperty({
     description: 'Url with book cover',
   })
-  cover: string;
+  cover!: string;
 
   @Expose()
   @ApiProperty({
     example: 15,
   })
-  actualPageCount: number;
+  actualPageCount!: number;
 
   @Expose()
   @ApiProperty({
     example: 15,
   })
-  pagesRead: number;
+  pagesRead!: number;
 
   @Expose()
   @ApiProperty({
@@ -41,7 +41,7 @@ export class UserBookResponseDto {
     type: String,
   })
   @Transform(dateTransform)
-  startedAt: string | null;
+  startedAt!: string | null;
 
   @Expose()
   @ApiProperty({
@@ -49,7 +49,7 @@ export class UserBookResponseDto {
     type: String,
   })
   @Transform(dateTransform)
-  finishedAt: string | null;
+  finishedAt!: string | null;
 
   @Expose()
   @ApiProperty({
@@ -57,43 +57,43 @@ export class UserBookResponseDto {
     type: String,
   })
   @Transform(dateTransform)
-  updatedAt: string | null;
+  updatedAt!: string | null;
 
   @Expose()
   @ApiProperty({
     example: 5,
     type: Number,
   })
-  rating: number | null;
+  rating!: number | null;
 
   @Expose()
   @ApiProperty({
     example: true,
   })
-  isFavorite: boolean;
+  isFavorite!: boolean;
 
   @Expose()
   @ApiProperty({
     description: 'Spent time reading in minutes',
     example: 45,
   })
-  spentTime: number;
+  spentTime!: number;
 
   @Expose()
   @ApiProperty({
     example: 15,
   })
-  readingSpeed: number;
+  readingSpeed!: number;
 
   @Expose()
   @ApiProperty({
     description: 'Estimated time reading in minutes',
     example: 320,
   })
-  estimatedTime: number | null;
+  estimatedTime!: number | null;
 
   @Expose()
   @ApiProperty()
   @Type(() => BookResponseDto)
-  book: BookResponseDto;
+  book!: BookResponseDto;
 }

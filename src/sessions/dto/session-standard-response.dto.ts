@@ -8,14 +8,14 @@ export class SessionStandardResponseDto {
     example: 5,
     type: Number,
   })
-  id: number;
+  id!: number;
 
   @Expose()
   @ApiProperty({
     example: 5,
     type: Number,
   })
-  bookId: number;
+  bookId!: number;
 
   @Expose()
   @ApiProperty({
@@ -23,14 +23,14 @@ export class SessionStandardResponseDto {
     example: SessionStatus.ENDED,
     enum: SessionStatus,
   })
-  status: SessionStatus;
+  status!: SessionStatus;
 
   @Expose()
   @ApiProperty({
     description: 'Session start time',
     type: String,
   })
-  startedAt: string;
+  startedAt!: string;
 
   @Expose()
   @ApiProperty({
@@ -38,14 +38,14 @@ export class SessionStandardResponseDto {
     type: String,
     nullable: true,
   })
-  finishedAt: string;
+  finishedAt!: string;
 
   @Expose()
   @ApiProperty({
     description: 'Session start page',
     type: Number,
   })
-  startPage: number;
+  startPage!: number;
 
   @Expose()
   @ApiProperty({
@@ -53,7 +53,7 @@ export class SessionStandardResponseDto {
     type: Number,
     nullable: true,
   })
-  endPage: number;
+  endPage!: number;
 
   @Expose()
   @ApiProperty({
@@ -61,7 +61,7 @@ export class SessionStandardResponseDto {
     type: Number,
     nullable: true,
   })
-  pagesRead: number;
+  pagesRead!: number;
 
   @Expose()
   @ApiProperty({
@@ -69,7 +69,7 @@ export class SessionStandardResponseDto {
     type: Number,
     nullable: true,
   })
-  duration: number;
+  duration!: number;
 
   @Expose()
   @ApiProperty({
@@ -77,7 +77,7 @@ export class SessionStandardResponseDto {
     type: Number,
     nullable: true,
   })
-  readingSpeed: number;
+  readingSpeed!: number;
 
   @Expose()
   @ApiProperty({
@@ -85,5 +85,5 @@ export class SessionStandardResponseDto {
     type: Boolean,
     nullable: true,
   })
-  improvedFromPrevious: boolean;
+  improvedFromPrevious!: boolean;
 }

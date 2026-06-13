@@ -9,7 +9,7 @@ export class GetSessionsPaginatedResponseDto {
     description: 'List of sessions',
     type: [SessionStandardResponseDto],
   })
-  data: SessionStandardResponseDto[];
+  data!: SessionStandardResponseDto[];
 
   @Expose()
   @ApiProperty({
@@ -18,5 +18,5 @@ export class GetSessionsPaginatedResponseDto {
     nullable: true,
     example: 12,
   })
-  nextCursor: number | null;
+  nextCursor!: number | null;
 }

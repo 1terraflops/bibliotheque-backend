@@ -7,14 +7,14 @@ export class AddReviewResponseDto {
     description: 'ID the of the review',
     example: '12',
   })
-  id: number;
+  id!: number;
 
   @Expose()
   @ApiProperty({
     description: 'The review of the book',
     example: 'Great book, recommend it',
   })
-  review: string;
+  review!: string;
 
   @Expose()
   @ApiProperty({
@@ -29,5 +29,5 @@ export class AddReviewResponseDto {
     description: 'Date of review',
     example: '2026-02-18T00:00:00.000Z',
   })
-  createdAt: string;
+  createdAt!: string;
 }

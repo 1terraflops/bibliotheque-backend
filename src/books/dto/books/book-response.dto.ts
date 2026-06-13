@@ -6,41 +6,41 @@ export class BookResponseDto {
   @ApiProperty({
     example: 1,
   })
-  id: number;
+  id!: number;
 
   @Expose()
   @ApiProperty({
     example: '9786175480083',
   })
-  isbn: string;
+  isbn!: string;
 
   @ApiProperty({
     example: '1984',
   })
   @Expose()
-  title: string;
+  title!: string;
 
   @ApiProperty({
     example: 'George Orwell',
   })
   @Expose()
-  author: string;
+  author!: string;
 
   @ApiProperty({
     example: 'Long description...',
   })
   @Expose()
-  description: string;
+  description!: string;
 
   @ApiProperty({
     example: 356,
   })
   @Expose()
-  pageCount: number;
+  pageCount!: number;
 
   @ApiProperty({
     example: '',
   })
   @Expose()
-  coverUrl: string;
+  coverUrl!: string;
 }

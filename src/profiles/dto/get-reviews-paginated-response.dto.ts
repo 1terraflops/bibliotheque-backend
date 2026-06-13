@@ -6,9 +6,9 @@ export class GetReviewsPaginatedResponseDto {
   @Expose()
   @ApiProperty({ type: [GetReviewsResponseDto] })
   @Type(() => GetReviewsResponseDto)
-  items: GetReviewsResponseDto[];
+  items!: GetReviewsResponseDto[];
 
   @Expose()
   @ApiProperty({ nullable: true, example: 16 })
-  nextCursor: number | null;
+  nextCursor!: number | null;
 }

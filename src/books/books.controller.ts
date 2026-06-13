@@ -12,15 +12,15 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { BooksService } from './books.service';
-import { GetBookByISBNRequestDto } from './dto/get-book-by-isbn-request.dto';
-import { AddBookByISBNRequestDto } from './dto/add-book-request.dto';
-import { BookResponseDto } from './dto/book-response.dto';
+import { GetBookByISBNRequestDto } from './dto/books/get-book-by-isbn-request.dto';
+import { AddBookByISBNRequestDto } from './dto/books/add-book-request.dto';
+import { BookResponseDto } from './dto/books/book-response.dto';
 import { CurrentUser } from 'src/_decorators/current-user.decorator';
-import { UserBookResponseDto } from './dto/user-book-response.dto';
-import { DeleteBookRequestDto } from './dto/delete-book-request.dto';
-import { UpdateBookRequestDto } from './dto/update-book-request.dto';
+import { UserBookResponseDto } from './dto/books/user-book-response.dto';
+import { DeleteBookRequestDto } from './dto/books/delete-book-request.dto';
+import { UpdateBookRequestDto } from './dto/books/update-book-request.dto';
 import { isbnDto } from '../_types/isbn.dto';
-import { GetAllUsersBooksRequestDto } from './dto/get-all-users-books-request.dto';
+import { GetAllUsersBooksRequestDto } from './dto/books/get-all-users-books-request.dto';
 import { Throttle } from '@nestjs/throttler';
 import {
   ApiConflictResponse,
@@ -31,18 +31,23 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { StandardResponses } from 'src/_decorators/standard-responses.decorator';
-import { DashboardResponseDto } from './dto/dashboard-response.dto';
-import { AddReviewResponseDto } from './dto/add-review-response.dto';
-import { AddReviewRequestDto } from './dto/add-review-request.dto';
+import { DashboardResponseDto } from './dto/books/dashboard-response.dto';
+import { AddReviewResponseDto } from './dto/reviews/add-review-response.dto';
+import { AddReviewRequestDto } from './dto/reviews/add-review-request.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { FileValidationPipe } from 'src/_pipes/file-validation.pipe';
-import { GetUserReadingStatsResponseDto } from './dto/get-user-reading-stats-response.dto';
-import { GetHeatmapDataResponseDto } from './dto/get-heatmap-data-response.dto';
-import { GetReadingHistoryRequestDto } from './dto/get-reading-history-request.dto';
-import { GetReadingHistoryResponseDto } from './dto/get-reading-history-respose.dto';
-import { GetReviewsForBookResponseDto } from './dto/get-reviews-for-book-response.dto';
-import { GetBookByNameRequestDto } from './dto/get-book-by-name-request.dto';
+import { GetUserReadingStatsResponseDto } from './dto/stats/get-user-reading-stats-response.dto';
+import { GetHeatmapDataResponseDto } from './dto/stats/get-heatmap-data-response.dto';
+import { GetReadingHistoryRequestDto } from './dto/stats/get-reading-history-request.dto';
+import { GetReadingHistoryResponseDto } from './dto/stats/get-reading-history-respose.dto';
+import { GetReviewsForBookResponseDto } from './dto/reviews/get-reviews-for-book-response.dto';
+import { GetBookByNameRequestDto } from './dto/books/get-book-by-name-request.dto';
+import { GoogleBooksService } from './google-books.service';
+import { ReadingStatsService } from './reading-stats.service';
+import { BookReviewsService } from './book-reviews.service';
+import { GetReadingOverTimeChartRequestDto } from './dto/stats/get-reading-over-time-chart-request.dto';
+import { GetReadingOverTimeChartResponseDto } from './dto/stats/get-reading-over-time-chart-response.dto';
 
 @ApiTags('books')
 @StandardResponses()
@@ -51,7 +56,12 @@ import { GetBookByNameRequestDto } from './dto/get-book-by-name-request.dto';
   version: '1',
 })
 export class BooksController {
-  constructor(private readonly booksService: BooksService) {}
+  constructor(
+    private readonly booksService: BooksService,
+    private readonly googleBooksService: GoogleBooksService,
+    private readonly readingStatsService: ReadingStatsService,
+    private readonly bookReviewsService: BookReviewsService,
+  ) {}
 
   @Get()
   @SerializeOptions({ type: BookResponseDto })
@@ -67,6 +77,27 @@ export class BooksController {
     return await this.booksService.findBook(dto);
   }
 
+  @Get('name')
+  @SerializeOptions({ type: BookResponseDto })
+  @ApiOkResponse({
+    description: 'Book returned successfully',
+    type: [BookResponseDto],
+  })
+  @Throttle({ default: { ttl: 1000, limit: 1 } })
+  async findByName(@Query() dto: GetBookByNameRequestDto) {
+    return this.googleBooksService.findByNameInGoogleBooks(dto);
+  }
+
+  @Get('users-book/:isbn')
+  @SerializeOptions({ type: UserBookResponseDto })
+  @ApiOkResponse({
+    description: 'Book returned successfully',
+    type: UserBookResponseDto,
+  })
+  async getUsersBook(@Param() dto: isbnDto, @CurrentUser('id') id: string) {
+    return await this.booksService.findUsersBook(dto, id);
+  }
+
   @Get('all-users-books')
   @SerializeOptions({ type: UserBookResponseDto })
   @ApiOkResponse({
@@ -78,16 +109,6 @@ export class BooksController {
     @CurrentUser('id') id: string,
   ) {
     return await this.booksService.findAllUsersBooks(dto, id);
-  }
-
-  @Get('users-book/:isbn')
-  @SerializeOptions({ type: UserBookResponseDto })
-  @ApiOkResponse({
-    description: 'Book returned successfully',
-    type: UserBookResponseDto,
-  })
-  async getUsersBook(@Param() dto: isbnDto, @CurrentUser('id') id: string) {
-    return await this.booksService.findUsersBook(dto, id);
   }
 
   @Get('dashboard')
@@ -107,7 +128,20 @@ export class BooksController {
     type: GetUserReadingStatsResponseDto,
   })
   async getUserReadingStats(@CurrentUser('id') profileId: string) {
-    return this.booksService.getUserReadingStats(profileId);
+    return this.readingStatsService.getUserReadingStats(profileId);
+  }
+
+  @Get('stats/reading-over-time-chart/:id')
+  @SerializeOptions({ type: GetReadingOverTimeChartResponseDto })
+  @ApiOkResponse({
+    description: 'Chart data returned successfully',
+    type: GetReadingOverTimeChartResponseDto,
+  })
+  getChart(
+    @Param() dto: GetReadingOverTimeChartRequestDto,
+    @CurrentUser('id') id: string,
+  ) {
+    return this.readingStatsService.getReadingOverTimeChart(id, dto);
   }
 
   @Get('stats/heatmap')
@@ -117,7 +151,7 @@ export class BooksController {
     type: GetHeatmapDataResponseDto,
   })
   async getUserReadingHeatmapData(@CurrentUser('id') profileId: string) {
-    return this.booksService.getUserReadingHeatmapData(profileId);
+    return this.readingStatsService.getUserReadingHeatmapData(profileId);
   }
 
   @Get('reading-history')
@@ -130,18 +164,7 @@ export class BooksController {
     @CurrentUser('id') profileId: string,
     @Query() dto: GetReadingHistoryRequestDto,
   ) {
-    return this.booksService.getReadingHistory(profileId, dto);
-  }
-
-  @Get('name')
-  @SerializeOptions({ type: BookResponseDto })
-  @ApiOkResponse({
-    description: 'Book returned successfully',
-    type: [BookResponseDto],
-  })
-  @Throttle({ default: { ttl: 1000, limit: 1 } })
-  async findByName(@Query() dto: GetBookByNameRequestDto) {
-    return this.booksService.findByNameInGoogleBooks(dto);
+    return this.readingStatsService.getReadingHistory(profileId, dto);
   }
 
   @Get('book-reviews/:isbn')
@@ -151,7 +174,7 @@ export class BooksController {
     type: [GetReviewsForBookResponseDto],
   })
   async getReviewsForBook(@Param('isbn') isbn: string) {
-    return await this.booksService.getReviewsForBook(isbn);
+    return await this.bookReviewsService.getReviewsForBook(isbn);
   }
 
   @Post()
@@ -183,7 +206,7 @@ export class BooksController {
     @Body() dto: AddReviewRequestDto,
     @CurrentUser('id') id: string,
   ) {
-    return await this.booksService.addReview(dto, id);
+    return await this.bookReviewsService.addReview(dto, id);
   }
 
   @Patch('cover/:id')

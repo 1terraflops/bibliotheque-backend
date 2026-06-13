@@ -10,48 +10,11 @@ import { EndSessionRequestDto } from './dto/end-session-request.dto';
 import moment from 'moment';
 import { Sessions } from 'generated/prisma/browser';
 import { GetSessionsRequestDto } from './dto/get-sessions-request.dto';
-import { GetChartRequestDto } from './dto/get-chart-request.dto';
-import { findAvg } from 'src/_helpers/findAverage';
+import { UsersBooks } from 'generated/prisma/client';
 
 @Injectable()
 export class SessionsService {
   constructor(private readonly prisma: PrismaService) {}
-
-  private estimateTimeLeft(
-    pagesRead: number,
-    pageCount: number,
-    duration: number,
-  ): number {
-    if (pagesRead === 0) return 0;
-
-    const pagesPerMinute = pagesRead / duration;
-    const pagesLeft = pageCount - pagesRead;
-
-    return Math.round(pagesLeft / pagesPerMinute);
-  }
-
-  private compareWithPrevious(sessions: Sessions[]) {
-    const lastIndex = sessions.length - 1;
-    return sessions.map((session, index) => {
-      if (index === lastIndex) {
-        return { ...session, improvedFromPrevious: null };
-      }
-      const prev = sessions[index + 1];
-
-      const cmp = (a: number, b: number) => (a > b ? 1 : a < b ? -1 : 0);
-
-      const scores = [
-        cmp(session.pagesRead ?? 0, prev.pagesRead ?? 0),
-        cmp(session.duration ?? 0, prev.duration ?? 0),
-        cmp(session.readingSpeed ?? 0, prev.readingSpeed ?? 0),
-      ];
-
-      const total = scores.reduce((sum, v) => sum + v, 0);
-      const improvedFromPrevious = total === 0 ? null : total > 0;
-
-      return { ...session, improvedFromPrevious };
-    });
-  }
 
   async getSessions(
     id: string,
@@ -77,6 +40,29 @@ export class SessionsService {
     };
   }
 
+  private compareWithPrevious(sessions: Sessions[]) {
+    const lastIndex = sessions.length - 1;
+    return sessions.map((session, index) => {
+      if (index === lastIndex) {
+        return { ...session, improvedFromPrevious: null };
+      }
+      const prev = sessions[index + 1];
+
+      const cmp = (a: number, b: number) => (a > b ? 1 : a < b ? -1 : 0);
+
+      const scores = [
+        cmp(session.pagesRead ?? 0, prev.pagesRead ?? 0),
+        cmp(session.duration ?? 0, prev.duration ?? 0),
+        cmp(session.readingSpeed ?? 0, prev.readingSpeed ?? 0),
+      ];
+
+      const total = scores.reduce((sum, v) => sum + v, 0);
+      const improvedFromPrevious = total === 0 ? null : total > 0;
+
+      return { ...session, improvedFromPrevious };
+    });
+  }
+
   async getActiveSession(profileId: string) {
     return this.prisma.sessions.findFirst({
       where: {
@@ -85,51 +71,6 @@ export class SessionsService {
       },
       orderBy: { startedAt: 'desc' },
     });
-  }
-
-  async getChart(profileId: string, dto: GetChartRequestDto) {
-    const rows = await this.prisma.sessions.findMany({
-      where: {
-        profileId,
-        bookId: dto.id,
-        status: SessionStatus.ENDED,
-      },
-      orderBy: { startedAt: 'desc' },
-      take: 10,
-    });
-
-    if (rows.length < 2) {
-      return {
-        pages: { data: [], avg: 0 },
-        durations: { data: [], avg: 0 },
-        speeds: { data: [], avg: 0 },
-      };
-    }
-
-    const sessions = rows.reverse();
-
-    const pages = sessions.map((session) => session.pagesRead);
-    const durations = sessions.map((session) => session.duration);
-    const speeds = sessions.map((session) => session.readingSpeed);
-
-    const avgPages = findAvg(pages);
-    const avgDuration = findAvg(durations);
-    const avgSpeed = findAvg(speeds);
-
-    return {
-      pages: {
-        data: pages,
-        avg: avgPages,
-      },
-      durations: {
-        data: durations,
-        avg: avgDuration,
-      },
-      speeds: {
-        data: speeds,
-        avg: avgSpeed,
-      },
-    };
   }
 
   async startSession(profileId: string, dto: StartSessionRequestDto) {
@@ -174,35 +115,59 @@ export class SessionsService {
 
   async endSession(profileId: string, dto: EndSessionRequestDto) {
     const session = await this.getActiveSession(profileId);
-    if (!session) {
-      throw new NotFoundException('No active session');
-    }
+    if (!session) throw new NotFoundException('No active session');
 
     const book = await this.prisma.usersBooks.findUnique({
       where: { profileId_bookId: { profileId, bookId: session.bookId } },
     });
-    if (!book) {
-      throw new NotFoundException('Book not found in user library');
-    }
+    if (!book) throw new NotFoundException('Book not found in user library');
 
-    const { actualPageCount = 0 }: { actualPageCount: number } = book;
+    const sessionStats = this.calcSessionStats(dto, book.actualPageCount ?? 0);
+    const bookUpdate = this.calcBookUpdate(book, sessionStats);
 
-    // Session values
+    await this.prisma.usersBooks.update({
+      where: { profileId_bookId: { profileId, bookId: session.bookId } },
+      data: bookUpdate,
+    });
+
+    return await this.prisma.sessions.update({
+      where: { profileId, id: session.id },
+      data: {
+        ...dto,
+        ...sessionStats,
+        status: SessionStatus.ENDED,
+      },
+    });
+  }
+
+  private calcSessionStats(dto: EndSessionRequestDto, actualPageCount: number) {
     const endPage = Math.min(dto.endPage, actualPageCount);
     const pagesRead = Math.max(0, endPage - dto.startPage);
     const duration = moment(dto.finishedAt).diff(dto.startedAt, 'minutes');
     const readingSpeed =
       duration > 0 ? Math.round(pagesRead / (duration / 60)) : 0;
+    return { endPage, pagesRead, duration, readingSpeed };
+  }
 
-    // Overall book values
+  private calcBookUpdate(
+    book: UsersBooks,
+    session: {
+      endPage: number;
+      pagesRead: number;
+      duration: number;
+      readingSpeed: number;
+    },
+  ) {
     const totalPagesRead = Math.min(
-      (book.pagesRead ?? 0) + pagesRead,
-      actualPageCount,
+      (book.pagesRead ?? 0) + session.pagesRead,
+      book.actualPageCount ?? 0,
     );
-    const totalSpentTime = (book.spentTime ?? 0) + duration;
+    const totalSpentTime = (book.spentTime ?? 0) + session.duration;
     const status =
-      endPage >= actualPageCount ? BookStatus.COMPLETED : book.status;
-    const totalReadingSpeed =
+      session.endPage >= (book.actualPageCount ?? 0)
+        ? BookStatus.COMPLETED
+        : book.status;
+    const readingSpeed =
       totalSpentTime > 0
         ? Math.round(totalPagesRead / (totalSpentTime / 60))
         : 0;
@@ -211,36 +176,32 @@ export class SessionsService {
         ? moment().toISOString()
         : book.finishedAt;
     const estimatedTime = this.estimateTimeLeft(
-      endPage,
-      actualPageCount,
+      session.endPage,
+      book.actualPageCount ?? 0,
       totalSpentTime,
     );
 
-    // Updated read book with new info
-    await this.prisma.usersBooks.update({
-      where: { profileId_bookId: { profileId, bookId: session.bookId } },
-      data: {
-        status,
-        finishedAt,
-        estimatedTime,
-        pagesRead: endPage,
-        spentTime: totalSpentTime,
-        readingSpeed: totalReadingSpeed,
-      },
-    });
+    return {
+      status,
+      finishedAt,
+      estimatedTime,
+      pagesRead: session.endPage,
+      spentTime: totalSpentTime,
+      readingSpeed,
+    };
+  }
 
-    // End session
-    return await this.prisma.sessions.update({
-      where: { profileId, id: session.id },
-      data: {
-        ...dto,
-        endPage,
-        pagesRead,
-        duration,
-        readingSpeed,
-        status: SessionStatus.ENDED,
-      },
-    });
+  private estimateTimeLeft(
+    pagesRead: number,
+    pageCount: number,
+    duration: number,
+  ): number {
+    if (pagesRead === 0) return 0;
+
+    const pagesPerMinute = pagesRead / duration;
+    const pagesLeft = pageCount - pagesRead;
+
+    return Math.round(pagesLeft / pagesPerMinute);
   }
 
   async cancelSession(profileId: string) {

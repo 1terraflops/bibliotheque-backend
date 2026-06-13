@@ -9,5 +9,5 @@ export class GetBookByNameRequestDto {
   @Transform(({ value }: { value: unknown }) =>
     typeof value === 'string' ? value.trim() : value,
   )
-  query: string;
+  query!: string;
 }

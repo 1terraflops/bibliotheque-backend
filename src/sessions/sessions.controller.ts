@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   Get,
-  Param,
   Patch,
   Post,
   Query,
@@ -17,8 +16,6 @@ import { SessionStandardResponseDto } from './dto/session-standard-response.dto'
 import { EndSessionRequestDto } from './dto/end-session-request.dto';
 import { GetSessionsRequestDto } from './dto/get-sessions-request.dto';
 import { GetSessionsPaginatedResponseDto } from './dto/get-sessions-paginated-response.dto';
-import { GetChartRequestDto } from './dto/get-chart-request.dto';
-import { GetChartResponseDto } from './dto/get-chart-response.dto';
 
 @Controller({
   version: '1',
@@ -50,16 +47,6 @@ export class SessionsController {
   })
   getActiveSession(@CurrentUser('id') id: string) {
     return this.sessionsService.getActiveSession(id);
-  }
-
-  @Get('chart/:id')
-  @SerializeOptions({ type: GetChartResponseDto })
-  @ApiOkResponse({
-    description: 'Chart data returned successfully',
-    type: GetChartResponseDto,
-  })
-  getChart(@Param() dto: GetChartRequestDto, @CurrentUser('id') id: string) {
-    return this.sessionsService.getChart(id, dto);
   }
 
   @Post('start')

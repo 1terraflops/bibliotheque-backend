@@ -7,7 +7,7 @@ export class GetTokenDto {
     example: 'email@mail.com',
   })
   @IsEmail()
-  email: string;
+  email!: string;
 
   @ApiProperty({
     description: "User's password",
@@ -15,5 +15,5 @@ export class GetTokenDto {
   })
   @IsString()
   @Length(6, 100)
-  password: string;
+  password!: string;
 }

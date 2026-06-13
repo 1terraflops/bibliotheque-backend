@@ -6,7 +6,7 @@ export class GetReviewsForBookResponseDto {
   @ApiProperty({
     description: 'Review for the selected book',
   })
-  review: string;
+  review!: string;
 
   @Expose()
   @ApiProperty({
@@ -14,17 +14,17 @@ export class GetReviewsForBookResponseDto {
     type: Boolean,
     example: true,
   })
-  hasSpoilers: boolean;
+  hasSpoilers!: boolean;
 
   @Expose()
   @ApiProperty({
     description: 'Date when the review was published',
   })
-  createdAt: string;
+  createdAt!: string;
 
   @Expose()
   @ApiProperty({
     description: 'Username or fullname of the user who published the review',
   })
-  author: string;
+  author!: string;
 }

@@ -8,7 +8,7 @@ export class StartSessionRequestDto {
     description: 'id of the book',
     example: 5,
   })
-  bookId: number;
+  bookId!: number;
 
   @IsNumber()
   @IsPositive()
@@ -16,5 +16,5 @@ export class StartSessionRequestDto {
     description: 'Session start page',
     example: 102,
   })
-  startPage: number;
+  startPage!: number;
 }
