@@ -11,6 +11,8 @@ import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { SessionsModule } from './sessions/sessions.module';
 import { ProfilesModule } from './profiles/profiles.module';
 import { StorageModule } from './_storage/storage.module';
+import { WinstonModule } from 'nest-winston';
+import { winstonConfig } from './logger';
 
 @Module({
   imports: [
@@ -34,6 +36,7 @@ import { StorageModule } from './_storage/storage.module';
     ]),
     SessionsModule,
     ProfilesModule,
+    WinstonModule.forRoot(winstonConfig),
   ],
   providers: [
     AuthService,

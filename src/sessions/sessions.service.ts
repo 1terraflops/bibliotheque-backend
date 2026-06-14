@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -11,10 +12,15 @@ import moment from 'moment';
 import { Sessions } from 'generated/prisma/browser';
 import { GetSessionsRequestDto } from './dto/get-sessions-request.dto';
 import { UsersBooks } from 'generated/prisma/client';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 @Injectable()
 export class SessionsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+  ) {}
 
   async getSessions(
     id: string,
@@ -76,6 +82,14 @@ export class SessionsService {
   async startSession(profileId: string, dto: StartSessionRequestDto) {
     const activeSession = await this.getActiveSession(profileId);
     if (activeSession) {
+      this.logger.warn(
+        'Attempted to start a session while one is already active',
+        {
+          context: SessionsService.name,
+          profileId,
+          activeSessionId: activeSession.id,
+        },
+      );
       throw new ConflictException('You already have an active session');
     }
 
@@ -108,9 +122,20 @@ export class SessionsService {
       },
     });
 
-    return await this.prisma.sessions.create({
+    const session = await this.prisma.sessions.create({
       data: { startPage, bookId, profileId },
     });
+
+    this.logger.info('Session started', {
+      context: SessionsService.name,
+      profileId,
+      bookId,
+      sessionId: session.id,
+      isFirstSession,
+      resumedAfterCompletion: isCompleted,
+    });
+
+    return session;
   }
 
   async endSession(profileId: string, dto: EndSessionRequestDto) {
@@ -130,14 +155,21 @@ export class SessionsService {
       data: bookUpdate,
     });
 
-    return await this.prisma.sessions.update({
+    const ended = await this.prisma.sessions.update({
       where: { profileId, id: session.id },
-      data: {
-        ...dto,
-        ...sessionStats,
-        status: SessionStatus.ENDED,
-      },
+      data: { ...dto, ...sessionStats, status: SessionStatus.ENDED },
     });
+
+    this.logger.info('Session ended', {
+      context: SessionsService.name,
+      profileId,
+      sessionId: session.id,
+      pagesRead: sessionStats.pagesRead,
+      duration: sessionStats.duration,
+      bookCompleted: bookUpdate.status === BookStatus.COMPLETED,
+    });
+
+    return ended;
   }
 
   private calcSessionStats(dto: EndSessionRequestDto, actualPageCount: number) {
@@ -210,6 +242,12 @@ export class SessionsService {
     if (!session) {
       throw new NotFoundException('Session does not exist');
     }
+
+    this.logger.info('Session cancelled', {
+      context: SessionsService.name,
+      profileId,
+      sessionId: session.id,
+    });
 
     return await this.prisma.sessions.update({
       where: { profileId, id: session.id },

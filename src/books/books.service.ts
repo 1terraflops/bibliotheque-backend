@@ -16,6 +16,8 @@ import { type Cache } from 'cache-manager';
 import { Books, BookStatus } from 'generated/prisma/client';
 import { SupabaseStorageService } from 'src/_storage/supabase_storage.service';
 import { GoogleBooksService } from './google-books.service';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 @Injectable()
 export class BooksService {
@@ -26,6 +28,7 @@ export class BooksService {
     private readonly storage: SupabaseStorageService,
     private readonly googleBooksService: GoogleBooksService,
     @Inject(CACHE_MANAGER) private readonly cacheManager: Cache,
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
   ) {}
 
   private async findBookInDB(dto: isbnDto) {
@@ -60,10 +63,21 @@ export class BooksService {
       return existingBook;
     }
 
+    this.logger.info('Book not found locally, fetching from Google Books', {
+      context: BooksService.name,
+      isbn: dto.isbn,
+    });
+
     const bookData = await this.googleBooksService.findInGoogleBooks(dto);
 
     const book = await this.prisma.books.create({
       data: bookData,
+    });
+
+    this.logger.info('Book saved to database', {
+      context: BooksService.name,
+      isbn: dto.isbn,
+      bookId: book.id,
     });
 
     await this.cacheManager.set(dto.isbn, book, this.TTL);
@@ -157,10 +171,18 @@ export class BooksService {
     });
 
     if (existingBook) {
+      this.logger.warn(
+        'Attempted to add a book that is already in the library',
+        {
+          context: BooksService.name,
+          isbn: dto.isbn,
+          profileId,
+        },
+      );
       throw new ConflictException('This book is already in your library');
     }
 
-    return await this.prisma.usersBooks.create({
+    const userBook = await this.prisma.usersBooks.create({
       data: {
         profileId,
         bookId: book.id,
@@ -169,6 +191,15 @@ export class BooksService {
       },
       include: { book: true },
     });
+
+    this.logger.info('Book added to profile', {
+      context: BooksService.name,
+      isbn: dto.isbn,
+      bookId: book.id,
+      profileId,
+    });
+
+    return userBook;
   }
 
   async uploadBookCover(
@@ -181,6 +212,13 @@ export class BooksService {
       'covers',
       `${profileId}/${bookId}`,
     );
+
+    this.logger.info('Book cover uploaded', {
+      context: BooksService.name,
+      bookId,
+      profileId,
+      url,
+    });
 
     return await this.prisma.usersBooks.updateMany({
       where: { bookId, profileId },
@@ -226,6 +264,13 @@ export class BooksService {
           bookId: book.bookId,
         },
       },
+    });
+
+    this.logger.info('Book deleted from profile', {
+      context: BooksService.name,
+      isbn: dto.isbn,
+      bookId: book.bookId,
+      profileId,
     });
   }
 }

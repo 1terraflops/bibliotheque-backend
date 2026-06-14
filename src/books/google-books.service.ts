@@ -1,5 +1,5 @@
 import { HttpService } from '@nestjs/axios';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 
 import { firstValueFrom } from 'rxjs';
 import { GoogleBooksResponseDto } from './dto/google-books/google-book-item.interface';
@@ -8,12 +8,17 @@ import { NormalizedBookDto } from './dto/google-books/normalized-book-dto';
 
 import { isbnDto } from '../_types/isbn.dto';
 import { GetBookByNameRequestDto } from './dto/books/get-book-by-name-request.dto';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 @Injectable()
 export class GoogleBooksService {
   private readonly GBOOKS_API_KEY = process.env.GOOGLE_BOOKS_API_KEY;
 
-  constructor(private readonly httpService: HttpService) {}
+  constructor(
+    private readonly httpService: HttpService,
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+  ) {}
 
   async findInGoogleBooks(dto: isbnDto) {
     const response = await firstValueFrom(
@@ -23,6 +28,10 @@ export class GoogleBooksService {
     );
 
     if (!response || !response.data.items?.length) {
+      this.logger.warn('Google Books returned no results', {
+        context: GoogleBooksService.name,
+        isbn: dto.isbn,
+      });
       throw new NotFoundException(`Book with ISBN ${dto.isbn} not found`);
     }
 

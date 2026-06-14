@@ -9,9 +9,13 @@ import helmet from 'helmet';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { apiReference } from '@scalar/nestjs-api-reference';
 import { OperationObject } from '@nestjs/swagger/dist/interfaces/open-api-spec.interface';
+import { WinstonModule } from 'nest-winston';
+import { winstonConfig } from './logger';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(AppModule, {
+    logger: WinstonModule.createLogger(winstonConfig),
+  });
 
   app.setGlobalPrefix('api');
 

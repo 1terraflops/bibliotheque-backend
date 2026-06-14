@@ -1,11 +1,16 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Inject, Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/_database/prisma.service';
 import { GetReviewsRequestDto } from './dto/get-reviews-request.dto';
 import { Prisma } from 'generated/prisma/client';
+import { WINSTON_MODULE_PROVIDER } from 'nest-winston';
+import { Logger } from 'winston';
 
 @Injectable()
 export class ProfilesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(WINSTON_MODULE_PROVIDER) private readonly logger: Logger,
+  ) {}
 
   private async fetchReviews(
     where: Prisma.BooksReviewsWhereInput,
@@ -45,8 +50,16 @@ export class ProfilesService {
 
     if (!review) throw new NotFoundException('Review not found');
 
-    return await this.prisma.booksReviews.delete({
+    const deleted = await this.prisma.booksReviews.delete({
       where: { id, profileId },
     });
+
+    this.logger.info('Review deleted', {
+      context: ProfilesService.name,
+      reviewId: id,
+      profileId,
+    });
+
+    return deleted;
   }
 }
